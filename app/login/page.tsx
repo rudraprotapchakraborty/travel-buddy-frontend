@@ -26,20 +26,38 @@ const handleSubmit = async (e: FormEvent) => {
 
     login(accessToken, user);
 
-    // 🔥 Redirect based on role
     if (user.role === "ADMIN") {
       router.push("/admin");
     } else {
       router.push("/dashboard");
     }
-
   } catch (err: any) {
     console.error(err);
-    setError(err?.response?.data?.message || "Login failed");
+
+    // Network / backend down
+    if (err.code === "ERR_NETWORK" || !err.response) {
+      setError("Unable to connect to the server. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    // Blocked user (403 from backend)
+    if (err.response.status === 403) {
+      setError(
+        "Your account has been blocked. Please contact support if you think this is a mistake."
+      );
+      setLoading(false);
+      return;
+    }
+
+    // Other errors: invalid credentials etc.
+    setError(err.response?.data?.message || "Login failed");
+    setLoading(false);
   } finally {
     setLoading(false);
   }
 };
+
 
 
   return (
