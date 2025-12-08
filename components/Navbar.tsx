@@ -13,7 +13,7 @@ type NavLinkProps = {
 
 const NavLink = ({ href, label, onClick }: NavLinkProps) => {
   const pathname = usePathname();
-  const active = pathname === href;
+  const active = pathname === href || pathname.startsWith(href + "/");
 
   return (
     <Link
@@ -36,6 +36,32 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const handleNavClick = () => setOpen(false);
+
+  // Build nav items based on auth state / role
+  const isAdmin = user?.role === "ADMIN";
+
+  const mainLinksLoggedOut = [
+    { href: "/explore", label: "Explore Travelers" },
+    { href: "/travel-plans", label: "Find Travel Buddy" },
+  ];
+
+  const mainLinksUser = [
+    { href: "/explore", label: "Explore Travelers" },
+    { href: "/travel-plans", label: "My Travel Plans" },
+    { href: "/dashboard", label: "Dashboard" }, // 🔥 Keep dashboard
+  ];
+
+  const mainLinksAdmin = [
+    { href: "/admin/users", label: "Manage Users" },
+    { href: "/admin/travel-plans", label: "Manage Travel Plans" },
+    { href: "/admin", label: "Admin Dashboard" },
+  ];
+
+  const mainLinks = !user
+    ? mainLinksLoggedOut
+    : isAdmin
+    ? mainLinksAdmin
+    : mainLinksUser;
 
   return (
     <nav className="w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-20">
@@ -62,16 +88,14 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center gap-1 ml-4">
-              <NavLink href="/explore" label="Find Travel Buddy" />
-              <NavLink href="/travel-plans" label="My Travel Plans" />
-              {user && <NavLink href="/dashboard" label="Dashboard" />}
-              {user?.role === "ADMIN" && <NavLink href="/admin" label="Admin" />}
+              {mainLinks.map((link) => (
+                <NavLink key={link.href} href={link.href} label={link.label} />
+              ))}
             </div>
           </div>
 
-          {/* Right: auth actions + mobile toggle */}
+          {/* Right: Auth actions + mobile toggle */}
           <div className="flex items-center gap-2">
-            {/* Desktop actions */}
             <div className="hidden md:flex items-center gap-2">
               {!user && (
                 <>
@@ -80,7 +104,7 @@ export default function Navbar() {
                     href="/register"
                     className="inline-flex items-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
                   >
-                    Get Started
+                    Register
                   </Link>
                 </>
               )}
@@ -116,41 +140,41 @@ export default function Navbar() {
         {open && (
           <div className="md:hidden pb-3 border-t border-slate-800/70">
             <div className="flex flex-col gap-1 pt-3">
-              <NavLink href="/explore" label="Find Travel Buddy" onClick={handleNavClick} />
-              <NavLink
-                href="/travel-plans"
-                label="My Travel Plans"
-                onClick={handleNavClick}
-              />
-              {user && (
+              {mainLinks.map((link) => (
                 <NavLink
-                  href="/dashboard"
-                  label="Dashboard"
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
                   onClick={handleNavClick}
                 />
-              )}
-              {user?.role === "ADMIN" && (
-                <NavLink href="/admin" label="Admin" onClick={handleNavClick} />
-              )}
+              ))}
 
               <div className="h-px bg-slate-800 my-2" />
 
               {!user && (
                 <>
-                  <NavLink href="/login" label="Login" onClick={handleNavClick} />
+                  <NavLink
+                    href="/login"
+                    label="Login"
+                    onClick={handleNavClick}
+                  />
                   <Link
                     href="/register"
                     onClick={handleNavClick}
                     className="mt-1 inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
                   >
-                    Get Started
+                    Register
                   </Link>
                 </>
               )}
 
               {user && (
                 <>
-                  <NavLink href="/profile" label="Profile" onClick={handleNavClick} />
+                  <NavLink
+                    href="/profile"
+                    label="Profile"
+                    onClick={handleNavClick}
+                  />
                   <button
                     onClick={() => {
                       logout();

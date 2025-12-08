@@ -15,22 +15,32 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      const { accessToken, user } = res.data.data;
-      login(accessToken, user);
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
+
+  try {
+    const res = await api.post("/auth/login", { email, password });
+    const { accessToken, user } = res.data.data;
+
+    login(accessToken, user);
+
+    // 🔥 Redirect based on role
+    if (user.role === "ADMIN") {
+      router.push("/admin");
+    } else {
       router.push("/dashboard");
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (err: any) {
+    console.error(err);
+    setError(err?.response?.data?.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10">
