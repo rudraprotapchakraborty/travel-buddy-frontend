@@ -19,12 +19,18 @@ interface AdminTravelPlan {
   destination: string;
   startDate: string;
   endDate: string;
+  // raw backend numeric fields (may exist)
+  budgetMin?: number;
+  budgetMax?: number;
+  // normalized frontend field
   budgetRange?: string;
   travelType?: TravelType;
   status?: TravelPlanStatus;
   visibility?: "PUBLIC" | "PRIVATE" | string;
   createdAt?: string;
-  host?: HostLite | string; // depending on backend
+  // backend may return `user` (id or populated object) — we normalize to host
+  user?: any;
+  host?: HostLite | string | null;
 }
 
 export default function ManageTravelPlansPage() {
@@ -39,7 +45,7 @@ export default function ManageTravelPlansPage() {
   const [travelTypeFilter, setTravelTypeFilter] = useState<"ALL" | TravelType>("ALL");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  if (user && user.role !== "ADMIN") {
+  if (user && (user as any).role !== "ADMIN") {
     return (
       <div className="max-w-4xl mx-auto py-10">
         <h1 className="text-2xl font-semibold text-red-500 mb-2">Unauthorized</h1>
@@ -53,18 +59,76 @@ export default function ManageTravelPlansPage() {
 
     if (dest.trim()) {
       const lower = dest.toLowerCase();
-      result = result.filter((p) => p.destination.toLowerCase().includes(lower));
+      result = result.filter((p) => (p.destination || "").toLowerCase().includes(lower));
     }
 
     if (statusF !== "ALL") {
-      result = result.filter((p) => (p.status || "ACTIVE") === statusF);
+      result = result.filter((p) => ((p.status || "ACTIVE") === statusF));
     }
 
     if (typeF !== "ALL") {
-      result = result.filter((p) => (p.travelType || "").toUpperCase() === typeF);
+      result = result.filter((p) => ((p.travelType || "").toUpperCase() === typeF));
     }
 
     return result;
+  };
+
+  // Normalizer function to convert raw plan into UI-friendly shape
+  const normalizePlan = (p: any): AdminTravelPlan => {
+    // budgetRange derivation
+    let budgetRange: string | undefined = undefined;
+    const min = typeof p.budgetMin === "number" ? p.budgetMin : undefined;
+    const max = typeof p.budgetMax === "number" ? p.budgetMax : undefined;
+    if (min !== undefined && max !== undefined) {
+      budgetRange = `${min} - ${max}`;
+    } else if (min !== undefined) {
+      budgetRange = `${min}`;
+    } else if (max !== undefined) {
+      budgetRange = `${max}`;
+    } else if (p.budgetRange) {
+      budgetRange = p.budgetRange;
+    }
+
+    // host normalization: prefer p.host, else p.user (populated object or id)
+    let host: HostLite | string | null = null;
+    if (p.host) {
+      host = p.host;
+    } else if (p.user) {
+      if (typeof p.user === "string") {
+        host = p.user;
+      } else if (typeof p.user === "object") {
+        const uid = p.user._id || p.user.id || "unknown";
+        const fullName =
+          p.user.fullName ||
+          p.user.name ||
+          `${p.user.firstName || ""} ${p.user.lastName || ""}`.trim() ||
+          "Unknown";
+        host = {
+          _id: uid,
+          fullName,
+          email: p.user.email,
+        } as HostLite;
+      }
+    }
+
+    // visibility mapping if backend uses isPublic boolean
+    const visibility = p.visibility ?? (p.isPublic === false ? "PRIVATE" : "PUBLIC");
+
+    return {
+      _id: p._id,
+      destination: p.destination,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      budgetMin: p.budgetMin,
+      budgetMax: p.budgetMax,
+      budgetRange,
+      travelType: p.travelType,
+      status: p.status,
+      visibility,
+      createdAt: p.createdAt,
+      host,
+      user: p.user,
+    } as AdminTravelPlan;
   };
 
   useEffect(() => {
@@ -74,17 +138,17 @@ export default function ManageTravelPlansPage() {
       setError(null);
 
       try {
-        // admin endpoint
         const res = await api.get("/travel-plans/admin/all", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        // backend returns { success: true, data: plans }
-        const data: AdminTravelPlan[] = res.data?.data ?? [];
-        setPlans(data);
-        setFilteredPlans(applyFilters(data, destinationFilter, statusFilter, travelTypeFilter));
+        const raw: any[] = res.data?.data ?? [];
+        const normalized: AdminTravelPlan[] = raw.map(normalizePlan);
+
+        setPlans(normalized);
+        setFilteredPlans(applyFilters(normalized, destinationFilter, statusFilter, travelTypeFilter));
       } catch (err: any) {
         console.error(err);
         setError(err?.response?.data?.message || "Failed to load travel plans");
@@ -119,8 +183,14 @@ export default function ManageTravelPlansPage() {
         }
       );
 
-      const updated = res.data?.data;
-      setPlans((prev) => prev.map((p) => (p._id === id ? updated : p)));
+      const updatedRaw = res.data?.data;
+      if (updatedRaw) {
+        const updated = normalizePlan(updatedRaw);
+        setPlans((prev) => prev.map((p) => (p._id === id ? updated : p)));
+      } else {
+        // fallback: update status in-place
+        setPlans((prev) => prev.map((p) => (p._id === id ? { ...p, status: newStatus } : p)));
+      }
     } catch (err: any) {
       console.error(err);
       setError(err?.response?.data?.message || "Failed to update plan status");
@@ -222,43 +292,86 @@ export default function ManageTravelPlansPage() {
             </thead>
             <tbody>
               {filteredPlans.map((p) => {
-                const hostObj = typeof p.host === "string" ? null : (p.host as HostLite | undefined);
+                const hostObj = p.host && typeof p.host !== "string" ? (p.host as HostLite) : undefined;
 
                 return (
                   <tr key={p._id} className="border-t border-slate-800/80 hover:bg-slate-900/40">
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <Link href={`/travel-plans/${p._id}`} className="font-medium text-slate-100 hover:text-primary-400">{p.destination}</Link>
+                        <Link href={`/travel-plans/${p._id}`} className="font-medium text-slate-100 hover:text-primary-400">
+                          {p.destination}
+                        </Link>
                         <span className="text-[11px] text-slate-400">Created: {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "-"}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-300">{new Date(p.startDate).toLocaleDateString()} – {new Date(p.endDate).toLocaleDateString()}</td>
+
+                    <td className="px-4 py-3 text-xs text-slate-300">
+                      {p.startDate ? new Date(p.startDate).toLocaleDateString() : "-"} – {p.endDate ? new Date(p.endDate).toLocaleDateString() : "-"}
+                    </td>
+
                     <td className="px-4 py-3">
                       {hostObj ? (
                         <div className="flex flex-col">
-                          <Link href={`/profile/${hostObj._id}`} className="text-xs font-medium text-slate-100 hover:text-primary-400">{hostObj.fullName}</Link>
+                          {/* LINK FIX: use query param so profile page can load that user's profile */}
+                          <Link href={`/profile?user=${hostObj._id}`} className="text-xs font-medium text-slate-100 hover:text-primary-400">
+                            {hostObj.fullName}
+                          </Link>
                           {hostObj.email && <span className="text-[11px] text-slate-400">{hostObj.email}</span>}
                         </div>
+                      ) : p.host && typeof p.host === "string" ? (
+                        <Link href={`/profile?user=${p.host}`} className="text-xs text-slate-400">
+                          ID: {p.host.slice(0, 8)}
+                        </Link>
                       ) : (
                         <span className="text-xs text-slate-500">Unknown</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-300">{p.travelType ? p.travelType.charAt(0).toUpperCase() + p.travelType.slice(1).toLowerCase() : "-"}</td>
-                    <td className="px-4 py-3 text-xs text-slate-300">{p.budgetRange || "-"}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${statusBadgeClasses(p.status)}`}>{p.status ? p.status : "ACTIVE"}</span>
+
+                    <td className="px-4 py-3 text-xs text-slate-300">
+                      {p.travelType ? p.travelType.charAt(0).toUpperCase() + p.travelType.slice(1).toLowerCase() : "-"}
                     </td>
+
+                    <td className="px-4 py-3 text-xs text-slate-300">
+                      {p.budgetRange
+                        ? p.budgetRange
+                        : (typeof p.budgetMin === "number" || typeof p.budgetMax === "number")
+                        ? `${p.budgetMin ?? ""}${p.budgetMin && p.budgetMax ? " - " : ""}${p.budgetMax ?? ""}`
+                        : "-"}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${statusBadgeClasses(
+                          p.status
+                        )}`}
+                      >
+                        {p.status ? p.status : "ACTIVE"}
+                      </span>
+                    </td>
+
                     <td className="px-4 py-3 text-xs text-slate-300">{p.visibility || "PUBLIC"}</td>
+
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <select disabled={actionLoadingId === p._id} value={(p.status || "ACTIVE").toUpperCase()} onChange={(e) => handleUpdateStatus(p._id, e.target.value as TravelPlanStatus)} className="rounded-lg border border-slate-700 bg-slate-900/70 px-2 py-1 text-xs text-slate-100">
+                        <select
+                          disabled={actionLoadingId === p._id}
+                          value={(p.status || "ACTIVE").toUpperCase()}
+                          onChange={(e) => handleUpdateStatus(p._id, e.target.value as TravelPlanStatus)}
+                          className="rounded-lg border border-slate-700 bg-slate-900/70 px-2 py-1 text-xs text-slate-100"
+                        >
                           <option value="ACTIVE">Active</option>
                           <option value="COMPLETED">Completed</option>
                           <option value="CANCELLED">Cancelled</option>
                           <option value="FLAGGED">Flagged</option>
                         </select>
 
-                        <button onClick={() => handleDeletePlan(p._id)} disabled={actionLoadingId === p._id} className="rounded-lg border border-red-500/40 px-2 py-1 text-xs font-medium text-red-300 hover:bg-red-500/10 disabled:opacity-60">Delete</button>
+                        <button
+                          onClick={() => handleDeletePlan(p._id)}
+                          disabled={actionLoadingId === p._id}
+                          className="rounded-lg border border-red-500/40 px-2 py-1 text-xs font-medium text-red-300 hover:bg-red-500/10 disabled:opacity-60"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>

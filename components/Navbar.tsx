@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
 
@@ -14,12 +14,18 @@ type NavLinkProps = {
 
 const NavLink = ({ href, label, onClick, exact = false }: NavLinkProps) => {
   const pathname = usePathname();
+  const search = useSearchParams();
+
+  // Special-case: when viewing another user's profile via ?user=ID,
+  // we do NOT want the "/profile" nav link to appear active.
+  const viewingOtherProfile = pathname === "/profile" && Boolean(search?.get("user"));
 
   // If exact is true, only match exact pathname.
   // Otherwise match exact OR any nested route (href + "/...").
+  // Additionally, if href is "/profile" and viewingOtherProfile is true, treat as NOT active.
   const active = exact
-    ? pathname === href
-    : pathname === href || pathname.startsWith(href + "/");
+    ? pathname === href && !(href === "/profile" && viewingOtherProfile)
+    : (pathname === href || pathname.startsWith(href + "/")) && !(href === "/profile" && viewingOtherProfile);
 
   return (
     <Link
@@ -62,7 +68,7 @@ export default function Navbar() {
     { href: "/admin/users", label: "Manage Users" },
     { href: "/admin/travel-plans", label: "Manage Travel Plans" },
     // Admin Dashboard: require exact match so it doesn't stay active on /admin/users
-    { href: "/admin", label: "Admin Dashboard", exact: true },
+    { href: "/admin", label: "Dashboard", exact: true },
   ];
 
   const mainLinks = !user
