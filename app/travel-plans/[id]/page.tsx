@@ -88,6 +88,12 @@ export default function TravelPlanDetailsPage() {
   const [reviewRating, setReviewRating] = useState<number>(5);
   const [reviewComment, setReviewComment] = useState<string>("");
 
+  // Determine admin role (case-insensitive support)
+  const isAdmin =
+    !!user &&
+    (((user as any).role && (String((user as any).role).toUpperCase() === "ADMIN")) ||
+      false);
+
   // ----- fetchPlan: extracted so other handlers can call it -----
   const fetchPlan = async () => {
     if (!token || !id) return;
@@ -445,7 +451,7 @@ export default function TravelPlanDetailsPage() {
 
   const handleDeleteReview = async (reviewId: string) => {
     if (!token) return;
-    if (!confirm("Delete your review?")) return;
+    if (!confirm("Delete this review?")) return;
     try {
       await api.delete(`/reviews/${reviewId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -800,15 +806,17 @@ export default function TravelPlanDetailsPage() {
                         </p>
                       )}
 
-                      {/* Edit/delete controls if this review is mine */}
-                      {reviewIsMine(r) && (
+                      {/* Edit/delete controls: Edit only for owner, Delete for owner or admin */}
+                      {(reviewIsMine(r) || isAdmin) && (
                         <div className="mt-3 flex gap-2">
-                          <button
-                            onClick={() => handleEditReview(r)}
-                            className="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600"
-                          >
-                            Edit
-                          </button>
+                          {reviewIsMine(r) && (
+                            <button
+                              onClick={() => handleEditReview(r)}
+                              className="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600"
+                            >
+                              Edit
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteReview(r._id)}
                             className="text-xs px-3 py-1 rounded bg-red-50 text-red-600"

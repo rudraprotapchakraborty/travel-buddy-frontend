@@ -49,20 +49,28 @@ export default function AdminPage() {
                 <span>Admin-only insights</span>
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-semibold text-slate-50">Admin dashboard</h1>
-                <p className="mt-1 text-sm text-slate-400">Monitor users, trips and monetization at a glance.</p>
+                <h1 className="text-2xl md:text-3xl font-semibold text-slate-50">
+                  Admin dashboard
+                </h1>
+                <p className="mt-1 text-sm text-slate-400">
+                  Monitor users, trips and monetization at a glance.
+                </p>
               </div>
             </div>
 
             {overview && (
               <div className="flex flex-col items-start md:items-end gap-1">
                 <p className="text-xs text-slate-400">
-                  Total users: {" "}
-                  <span className="text-slate-100 font-semibold">{overview.userCount}</span>
+                  Total users:{" "}
+                  <span className="text-slate-100 font-semibold">
+                    {overview.userCount}
+                  </span>
                 </p>
                 <p className="text-xs text-slate-400">
-                  Total travel plans: {" "}
-                  <span className="text-emerald-300 font-semibold">{overview.planCount}</span>
+                  Total travel plans:{" "}
+                  <span className="text-emerald-300 font-semibold">
+                    {overview.planCount}
+                  </span>
                 </p>
               </div>
             )}
@@ -75,7 +83,10 @@ export default function AdminPage() {
         {loading ? (
           <div className="grid md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 rounded-2xl bg-slate-950/80 border border-slate-800 animate-pulse" />
+              <div
+                key={i}
+                className="h-24 rounded-2xl bg-slate-950/80 border border-slate-800 animate-pulse"
+              />
             ))}
           </div>
         ) : !overview ? (
@@ -85,9 +96,15 @@ export default function AdminPage() {
             {/* Total Users */}
             <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 shadow-sm shadow-black/30">
               <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-sky-500/20 blur-2xl" />
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Total users</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-50">{overview.userCount}</p>
-              <p className="mt-1 text-[11px] text-slate-500">Registered on the platform</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
+                Total users
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-slate-50">
+                {overview.userCount}
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Registered on the platform
+              </p>
 
               {/* Button moved here */}
               <div className="mt-4">
@@ -103,9 +120,15 @@ export default function AdminPage() {
             {/* Travel Plans */}
             <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 shadow-sm shadow-black/30">
               <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-purple-500/20 blur-2xl" />
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Travel plans</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-50">{overview.planCount}</p>
-              <p className="mt-1 text-[11px] text-slate-500">Created by users</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
+                Travel plans
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-slate-50">
+                {overview.planCount}
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Created by users
+              </p>
 
               {/* Button moved here */}
               <div className="mt-4">
@@ -121,11 +144,26 @@ export default function AdminPage() {
             {/* Reviews */}
             <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 shadow-sm shadow-black/30">
               <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-amber-500/20 blur-2xl" />
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Reviews</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-50">{overview.reviewCount}</p>
-              <p className="mt-1 text-[11px] text-slate-500">Feedback on trips & buddies</p>
-            </div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
+                Reviews
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-slate-50">
+                {overview.reviewCount}
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Feedback on trips & buddies
+              </p>
 
+              {/* NEW BUTTON */}
+              <div className="mt-4">
+                <Link
+                  href="/admin/travel-plans"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-sm font-medium text-slate-100 hover:bg-slate-900"
+                >
+                  Manage reviews
+                </Link>
+              </div>
+            </div>
           </section>
         )}
       </div>
