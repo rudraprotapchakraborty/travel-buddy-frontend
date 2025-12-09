@@ -45,11 +45,18 @@ function getInitials(fullName?: string | null) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-const Avatar = ({ fullName }: { fullName?: string | null }) => {
+const Avatar = ({ fullName, isAdmin }: { fullName?: string | null; isAdmin?: boolean }) => {
   const initials = getInitials(fullName);
+
+  // Different style for admins
+  const baseClass =
+    isAdmin
+      ? "h-8 w-8 rounded-full bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-sm font-semibold text-white shadow-sm"
+      : "h-8 w-8 rounded-full bg-gradient-to-tr from-primary-500 to-sky-400 flex items-center justify-center text-sm font-semibold text-white shadow-sm";
+
   return (
     <div
-      className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary-500 to-sky-400 flex items-center justify-center text-sm font-semibold text-white shadow-sm"
+      className={baseClass}
       title={fullName ?? "User"}
       aria-hidden="true"
     >
@@ -68,6 +75,19 @@ const VerifiedBadge = () => (
       <path fillRule="evenodd" d="M16.704 5.29a1 1 0 01.094 1.32l-6.5 8a1 1 0 01-1.53.09l-3.5-3.75a1 1 0 111.48-1.34l2.84 3.04 5.73-7.06a1 1 0 011.39-.34z" clipRule="evenodd" />
     </svg>
   </span>
+);
+
+const AdminPanelBadge = () => (
+  <Link
+    href="/admin"
+    className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-700/90 text-xs font-semibold text-white hover:opacity-95"
+    title="Admin Panel"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
+      <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zM13 3v6h8V3h-8zm0 8h8v10h-8V11z" />
+    </svg>
+    <span>Admin Panel</span>
+  </Link>
 );
 
 export default function Navbar() {
@@ -137,8 +157,14 @@ export default function Navbar() {
     .toLowerCase();
 
   const isActiveSubscriber = isLoggedIn && normalizedStatus === "active";
-  const showVerifiedBadge = Boolean((source as any)?.isVerified) || isActiveSubscriber;
-  const isAdmin = (source as any)?.role === "ADMIN";
+
+  // normalize role check (case-insensitive)
+  const isAdmin =
+    typeof (source as any)?.role === "string" &&
+    String((source as any).role).toLowerCase() === "admin";
+
+  // hide subscription/verified badge for admins
+  const showVerifiedBadge = !isAdmin && (Boolean((source as any)?.isVerified) || isActiveSubscriber);
 
   const mainLinksLoggedOut = [
     { href: "/explore", label: "Explore Travelers" },
@@ -222,7 +248,7 @@ export default function Navbar() {
                 </>
               )}
 
-              {isLoggedIn && !isActiveSubscriber && (
+              {isLoggedIn && !isAdmin && !isActiveSubscriber && (
                 <Link
                   href="/payment"
                   className="inline-flex items-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
@@ -239,12 +265,13 @@ export default function Navbar() {
                     aria-haspopup="menu"
                     className="inline-flex items-center gap-3 px-2 py-1 rounded-lg hover:bg-slate-900 transition"
                   >
-                    <Avatar fullName={(source as any)?.fullName} />
+                    <Avatar fullName={(source as any)?.fullName} isAdmin={isAdmin} />
                     <div className="flex items-center">
                       <span className="text-sm text-slate-100 font-medium">
                         {(source as any)?.fullName ? String((source as any).fullName).split(" ")[0] : "You"}
                       </span>
                       {showVerifiedBadge && <VerifiedBadge />}
+                      {isAdmin && <AdminPanelBadge />}
                     </div>
 
                     <svg
@@ -318,7 +345,7 @@ export default function Navbar() {
 
               {isLoggedIn && (
                 <>
-                  {!isActiveSubscriber && (
+                  {!isAdmin && !isActiveSubscriber && (
                     <Link
                       href="/payment"
                       onClick={handleNavClick}
@@ -329,11 +356,12 @@ export default function Navbar() {
                   )}
 
                   <div className="px-3 py-2 flex items-center gap-3" onClick={() => setOpen(false)}>
-                    <Avatar fullName={(source as any)?.fullName} />
+                    <Avatar fullName={(source as any)?.fullName} isAdmin={isAdmin} />
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-slate-100">{(source as any)?.fullName ?? "You"}</span>
                         {showVerifiedBadge && <VerifiedBadge />}
+                        {isAdmin && <AdminPanelBadge />}
                       </div>
                       <span className="text-xs text-slate-400">View profile</span>
                     </div>
