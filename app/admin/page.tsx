@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Protected from "@/components/Protected";
 import { useAuth } from "@/components/AuthContext";
@@ -9,7 +10,6 @@ interface Overview {
   userCount: number;
   planCount: number;
   reviewCount: number;
-  totalRevenue: number; // in cents
 }
 
 export default function AdminPage() {
@@ -34,14 +34,6 @@ export default function AdminPage() {
     fetchOverview();
   }, [token]);
 
-  const formatRevenue = (cents: number) => {
-    const amount = cents / 100;
-    return amount.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
-
   return (
     <Protected adminOnly>
       <div className="space-y-8">
@@ -57,105 +49,83 @@ export default function AdminPage() {
                 <span>Admin-only insights</span>
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-semibold text-slate-50">
-                  Admin dashboard
-                </h1>
-                <p className="mt-1 text-sm text-slate-400">
-                  Monitor users, trips and monetization at a glance.
-                </p>
+                <h1 className="text-2xl md:text-3xl font-semibold text-slate-50">Admin dashboard</h1>
+                <p className="mt-1 text-sm text-slate-400">Monitor users, trips and monetization at a glance.</p>
               </div>
             </div>
 
             {overview && (
               <div className="flex flex-col items-start md:items-end gap-1">
                 <p className="text-xs text-slate-400">
-                  Total users:{" "}
-                  <span className="text-slate-100 font-semibold">
-                    {overview.userCount}
-                  </span>
+                  Total users: {" "}
+                  <span className="text-slate-100 font-semibold">{overview.userCount}</span>
                 </p>
                 <p className="text-xs text-slate-400">
-                  Total revenue:{" "}
-                  <span className="text-emerald-300 font-semibold">
-                    ${formatRevenue(overview.totalRevenue)}
-                  </span>
+                  Total travel plans: {" "}
+                  <span className="text-emerald-300 font-semibold">{overview.planCount}</span>
                 </p>
               </div>
             )}
           </div>
+
+          {/* removed header action buttons - moved to individual cards */}
         </section>
 
         {/* Content */}
         {loading ? (
           <div className="grid md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => (
-              <div
-                key={i}
-                className="h-24 rounded-2xl bg-slate-950/80 border border-slate-800 animate-pulse"
-              />
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-24 rounded-2xl bg-slate-950/80 border border-slate-800 animate-pulse" />
             ))}
           </div>
         ) : !overview ? (
           <p className="text-sm text-slate-400">No data.</p>
         ) : (
-          <section className="grid md:grid-cols-4 gap-4">
+          <section className="grid md:grid-cols-3 gap-4">
             {/* Total Users */}
             <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 shadow-sm shadow-black/30">
               <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-sky-500/20 blur-2xl" />
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-                Total users
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-50">
-                {overview.userCount}
-              </p>
-              <p className="mt-1 text-[11px] text-slate-500">
-                Registered on the platform
-              </p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Total users</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-50">{overview.userCount}</p>
+              <p className="mt-1 text-[11px] text-slate-500">Registered on the platform</p>
+
+              {/* Button moved here */}
+              <div className="mt-4">
+                <Link
+                  href="/admin/users"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-sm font-medium text-slate-100 hover:bg-slate-900"
+                >
+                  Manage users
+                </Link>
+              </div>
             </div>
 
             {/* Travel Plans */}
             <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 shadow-sm shadow-black/30">
               <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-purple-500/20 blur-2xl" />
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-                Travel plans
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-50">
-                {overview.planCount}
-              </p>
-              <p className="mt-1 text-[11px] text-slate-500">
-                Created by users
-              </p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Travel plans</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-50">{overview.planCount}</p>
+              <p className="mt-1 text-[11px] text-slate-500">Created by users</p>
+
+              {/* Button moved here */}
+              <div className="mt-4">
+                <Link
+                  href="/admin/travel-plans"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-sm font-medium text-slate-100 hover:bg-slate-900"
+                >
+                  Manage travel plans
+                </Link>
+              </div>
             </div>
 
             {/* Reviews */}
             <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 shadow-sm shadow-black/30">
               <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-amber-500/20 blur-2xl" />
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-                Reviews
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-50">
-                {overview.reviewCount}
-              </p>
-              <p className="mt-1 text-[11px] text-slate-500">
-                Feedback on trips & buddies
-              </p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Reviews</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-50">{overview.reviewCount}</p>
+              <p className="mt-1 text-[11px] text-slate-500">Feedback on trips & buddies</p>
             </div>
 
-            {/* Revenue */}
-            <div className="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-4 md:col-span-1 shadow-sm shadow-black/30 flex flex-col justify-between">
-              <div className="pointer-events-none absolute -top-10 -right-10 h-16 w-16 rounded-full bg-emerald-500/25 blur-2xl" />
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-                  Total revenue
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-emerald-300">
-                  ${formatRevenue(overview.totalRevenue)}
-                </p>
-              </div>
-              <p className="mt-2 text-[11px] text-slate-500">
-                Aggregated across all premium payments
-              </p>
-            </div>
           </section>
         )}
       </div>
