@@ -9,11 +9,17 @@ type NavLinkProps = {
   href: string;
   label: string;
   onClick?: () => void;
+  exact?: boolean; // new prop
 };
 
-const NavLink = ({ href, label, onClick }: NavLinkProps) => {
+const NavLink = ({ href, label, onClick, exact = false }: NavLinkProps) => {
   const pathname = usePathname();
-  const active = pathname === href || pathname.startsWith(href + "/");
+
+  // If exact is true, only match exact pathname.
+  // Otherwise match exact OR any nested route (href + "/...").
+  const active = exact
+    ? pathname === href
+    : pathname === href || pathname.startsWith(href + "/");
 
   return (
     <Link
@@ -48,13 +54,15 @@ export default function Navbar() {
   const mainLinksUser = [
     { href: "/explore", label: "Explore Travelers" },
     { href: "/travel-plans", label: "My Travel Plans" },
-    { href: "/dashboard", label: "Dashboard" }, // 🔥 Keep dashboard
+    // keep dashboard (normal behavior: mark active for nested routes too)
+    { href: "/dashboard", label: "Dashboard" },
   ];
 
   const mainLinksAdmin = [
     { href: "/admin/users", label: "Manage Users" },
     { href: "/admin/travel-plans", label: "Manage Travel Plans" },
-    { href: "/admin", label: "Admin Dashboard" },
+    // Admin Dashboard: require exact match so it doesn't stay active on /admin/users
+    { href: "/admin", label: "Admin Dashboard", exact: true },
   ];
 
   const mainLinks = !user
@@ -89,7 +97,14 @@ export default function Navbar() {
 
             <div className="hidden md:flex items-center gap-1 ml-4">
               {mainLinks.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} />
+                // pass exact if present
+                <NavLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  // @ts-ignore - optional exact on some entries
+                  exact={link.exact}
+                />
               ))}
             </div>
           </div>
@@ -146,6 +161,8 @@ export default function Navbar() {
                   href={link.href}
                   label={link.label}
                   onClick={handleNavClick}
+                  // @ts-ignore
+                  exact={link.exact}
                 />
               ))}
 
