@@ -90,6 +90,9 @@ const AdminPanelBadge = () => (
   </Link>
 );
 
+// ---- FIX: explicit LinkItem type so `exact` is allowed on items ----
+type LinkItem = { href: string; label: string; exact?: boolean };
+
 export default function Navbar() {
   const auth = useAuth() as any;
   const userFromAuth = auth?.user ?? null;
@@ -166,24 +169,25 @@ export default function Navbar() {
   // hide subscription/verified badge for admins
   const showVerifiedBadge = !isAdmin && (Boolean((source as any)?.isVerified) || isActiveSubscriber);
 
-  const mainLinksLoggedOut = [
+  // annotate arrays with LinkItem so `exact` prop is part of the type
+  const mainLinksLoggedOut: LinkItem[] = [
     { href: "/explore", label: "Explore Travelers" },
     { href: "/travel-plans", label: "Find Travel Buddy" },
   ];
 
-  const mainLinksUser = [
+  const mainLinksUser: LinkItem[] = [
     { href: "/explore", label: "Explore Travelers" },
     { href: "/travel-plans", label: "My Travel Plans" },
     { href: "/dashboard", label: "Dashboard" },
   ];
 
-  const mainLinksAdmin = [
+  const mainLinksAdmin: LinkItem[] = [
     { href: "/admin/users", label: "Manage Users" },
     { href: "/admin/travel-plans", label: "Manage Travel Plans" },
     { href: "/admin", label: "Dashboard", exact: true },
   ];
 
-  const mainLinks = !isLoggedIn ? mainLinksLoggedOut : isAdmin ? mainLinksAdmin : mainLinksUser;
+  const mainLinks: LinkItem[] = !isLoggedIn ? mainLinksLoggedOut : isAdmin ? mainLinksAdmin : mainLinksUser;
 
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
