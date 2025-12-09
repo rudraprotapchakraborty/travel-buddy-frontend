@@ -3,6 +3,7 @@ import "./globals.css";
 import { ReactNode } from "react";
 import { AuthProvider } from "@/components/AuthContext";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Travel Buddy & Meetup",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AuthProvider>
           <Navbar />
           <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
+                  <Footer />
         </AuthProvider>
       </body>
     </html>
