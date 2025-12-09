@@ -7,12 +7,17 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import api from "@/lib/api";
 
+// --- Types ---
+type LinkItem = { href: string; label: string; exact?: boolean };
+
 type NavLinkProps = {
   href: string;
   label: string;
   onClick?: () => void;
   exact?: boolean;
 };
+
+// --- Components ---
 
 const NavLink = ({ href, label, onClick, exact = false }: NavLinkProps) => {
   const pathname = usePathname();
@@ -22,18 +27,22 @@ const NavLink = ({ href, label, onClick, exact = false }: NavLinkProps) => {
 
   const active = exact
     ? pathname === href && !(href === "/profile" && viewingOtherProfile)
-    : (pathname === href || pathname.startsWith(href + "/")) && !(href === "/profile" && viewingOtherProfile);
+    : (pathname === href || pathname.startsWith(href + "/")) &&
+      !(href === "/profile" && viewingOtherProfile);
 
   return (
     <Link
       href={href}
       onClick={onClick}
-      className={`relative inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition
-        ${active ? "text-slate-50" : "text-slate-300 hover:text-slate-50"}
+      className={`relative px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ease-out
+        ${
+          active
+            ? "text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+            : "text-slate-400 hover:text-white hover:bg-white/5"
+        }
       `}
     >
       {label}
-      {active && <span className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-primary-500" />}
     </Link>
   );
 };
@@ -48,18 +57,12 @@ function getInitials(fullName?: string | null) {
 const Avatar = ({ fullName, isAdmin }: { fullName?: string | null; isAdmin?: boolean }) => {
   const initials = getInitials(fullName);
 
-  // Different style for admins
-  const baseClass =
-    isAdmin
-      ? "h-8 w-8 rounded-full bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-sm font-semibold text-white shadow-sm"
-      : "h-8 w-8 rounded-full bg-gradient-to-tr from-primary-500 to-sky-400 flex items-center justify-center text-sm font-semibold text-white shadow-sm";
+  const baseClass = isAdmin
+    ? "h-9 w-9 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 ring-2 ring-slate-950 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-rose-500/20"
+    : "h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-sky-500 ring-2 ring-slate-950 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-indigo-500/20";
 
   return (
-    <div
-      className={baseClass}
-      title={fullName ?? "User"}
-      aria-hidden="true"
-    >
+    <div className={baseClass} title={fullName ?? "User"} aria-hidden="true">
       {initials}
     </div>
   );
@@ -67,12 +70,11 @@ const Avatar = ({ fullName, isAdmin }: { fullName?: string | null; isAdmin?: boo
 
 const VerifiedBadge = () => (
   <span
-    className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500 text-white text-xs"
+    className="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500 text-white shadow-sm shadow-emerald-500/30"
     title="Verified"
-    aria-hidden="true"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor" aria-hidden="true">
-      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 01.094 1.32l-6.5 8a1 1 0 01-1.53.09l-3.5-3.75a1 1 0 111.48-1.34l2.84 3.04 5.73-7.06a1 1 0 011.39-.34z" clipRule="evenodd" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-2.5 h-2.5">
+      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </span>
 );
@@ -80,18 +82,27 @@ const VerifiedBadge = () => (
 const AdminPanelBadge = () => (
   <Link
     href="/admin"
-    className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-700/90 text-xs font-semibold text-white hover:opacity-95"
-    title="Admin Panel"
+    className="ml-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold uppercase tracking-wider text-indigo-400 hover:bg-indigo-500/20 transition-colors"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
-      <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zM13 3v6h8V3h-8zm0 8h8v10h-8V11z" />
-    </svg>
-    <span>Admin Panel</span>
+    <span>ADMIN</span>
   </Link>
 );
 
-// ---- FIX: explicit LinkItem type so `exact` is allowed on items ----
-type LinkItem = { href: string; label: string; exact?: boolean };
+// --- Icons ---
+
+const MenuIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+// --- Main Component ---
 
 export default function Navbar() {
   const auth = useAuth() as any;
@@ -101,8 +112,6 @@ export default function Navbar() {
   const refreshUser = auth?.refreshUser;
 
   const [profile, setProfile] = useState<any | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-
   const mountedRef = useRef(true);
 
   const fetchProfile = useCallback(async () => {
@@ -111,19 +120,14 @@ export default function Navbar() {
       setProfile(null);
       return;
     }
-    setProfileLoading(true);
     try {
       const res = await api.get("/users/me/self", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = res.data?.data ?? res.data ?? null;
-      if (!mountedRef.current) return;
-      setProfile(data ?? null);
+      if (mountedRef.current) setProfile(data ?? null);
     } catch (err) {
-      if (!mountedRef.current) return;
-      setProfile(null);
-    } finally {
-      if (mountedRef.current) setProfileLoading(false);
+      if (mountedRef.current) setProfile(null);
     }
   }, [token]);
 
@@ -160,30 +164,24 @@ export default function Navbar() {
     .toLowerCase();
 
   const isActiveSubscriber = isLoggedIn && normalizedStatus === "active";
-
-  // normalize role check (case-insensitive)
   const isAdmin =
-    typeof (source as any)?.role === "string" &&
-    String((source as any).role).toLowerCase() === "admin";
-
-  // hide subscription/verified badge for admins
+    typeof (source as any)?.role === "string" && String((source as any).role).toLowerCase() === "admin";
   const showVerifiedBadge = !isAdmin && (Boolean((source as any)?.isVerified) || isActiveSubscriber);
 
-  // annotate arrays with LinkItem so `exact` prop is part of the type
   const mainLinksLoggedOut: LinkItem[] = [
-    { href: "/explore", label: "Explore Travelers" },
-    { href: "/travel-plans", label: "Find Travel Buddy" },
+    { href: "/explore", label: "Explore" },
+    { href: "/travel-plans", label: "Find Buddy" },
   ];
 
   const mainLinksUser: LinkItem[] = [
-    { href: "/explore", label: "Explore Travelers" },
-    { href: "/travel-plans", label: "My Travel Plans" },
+    { href: "/explore", label: "Explore" },
+    { href: "/travel-plans", label: "My Plans" },
     { href: "/dashboard", label: "Dashboard" },
   ];
 
   const mainLinksAdmin: LinkItem[] = [
-    { href: "/admin/users", label: "Manage Users" },
-    { href: "/admin/travel-plans", label: "Manage Travel Plans" },
+    { href: "/admin/users", label: "Users" },
+    { href: "/admin/travel-plans", label: "Plans" },
     { href: "/admin", label: "Dashboard", exact: true },
   ];
 
@@ -203,11 +201,9 @@ export default function Navbar() {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
     }
-
     function onEsc(e: KeyboardEvent) {
       if (e.key === "Escape") setMenuOpen(false);
     }
-
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
     return () => {
@@ -217,175 +213,240 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-20">
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="flex items-center justify-between py-3 gap-3">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 select-none" onClick={handleNavClick}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary-500 to-sky-400 text-lg">
-                🌍
-              </span>
-              <span className="flex flex-col leading-tight">
-                <span className="text-sm font-semibold text-slate-50">Travel Buddy</span>
-                <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400">Trips • Meetups • Buddies</span>
-              </span>
+    <nav className="fixed w-full top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16">
+          {/* --- Left: Logo & Links --- */}
+          <div className="flex items-center gap-8">
+            <Link
+              href="/"
+              className="group flex items-center gap-2.5 select-none focus:outline-none"
+              onClick={handleNavClick}
+            >
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-sky-500 shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
+                <span className="text-xl filter drop-shadow-md">🌍</span>
+                <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20"></div>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+                  Travel Buddy
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-semibold group-hover:text-primary-400 transition-colors">
+                  Connect & Go
+                </span>
+              </div>
             </Link>
 
-            <div className="hidden md:flex items-center gap-1 ml-4">
+            <div className="hidden md:flex items-center gap-1">
               {mainLinks.map((link) => (
                 <NavLink key={link.href} href={link.href} label={link.label} exact={link.exact} />
               ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-3">
-              {!isLoggedIn && (
+          {/* --- Right: Auth & Actions --- */}
+          <div className="flex items-center gap-3">
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-4">
+              {!isLoggedIn ? (
                 <>
-                  <NavLink href="/login" label="Login" />
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                  >
+                    Login
+                  </Link>
                   <Link
                     href="/register"
-                    className="inline-flex items-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
+                    className="group relative inline-flex items-center justify-center px-5 py-2 text-sm font-semibold text-white transition-all duration-200 bg-primary-600 rounded-full hover:bg-primary-500 hover:shadow-lg hover:shadow-primary-500/30 active:scale-95 overflow-hidden"
                   >
-                    Register
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:animate-shine" />
+                    <span>Get Started</span>
                   </Link>
                 </>
-              )}
-
-              {isLoggedIn && !isAdmin && !isActiveSubscriber && (
-                <Link
-                  href="/payment"
-                  className="inline-flex items-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
-                >
-                  Go Premium
-                </Link>
-              )}
-
-              {isLoggedIn && (
-                <div className="relative flex items-center gap-2" ref={menuRef}>
-                  <button
-                    onClick={() => setMenuOpen((s) => !s)}
-                    aria-expanded={menuOpen}
-                    aria-haspopup="menu"
-                    className="inline-flex items-center gap-3 px-2 py-1 rounded-lg hover:bg-slate-900 transition"
-                  >
-                    <Avatar fullName={(source as any)?.fullName} isAdmin={isAdmin} />
-                    <div className="flex items-center">
-                      <span className="text-sm text-slate-100 font-medium">
-                        {(source as any)?.fullName ? String((source as any).fullName).split(" ")[0] : "You"}
-                      </span>
-                      {showVerifiedBadge && <VerifiedBadge />}
-                      {isAdmin && <AdminPanelBadge />}
-                    </div>
-
-                    <svg
-                      className={`h-4 w-4 transition-transform ${menuOpen ? "rotate-180" : "rotate-0"}`}
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-
-                  {menuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md bg-slate-900 border border-slate-800 shadow-lg py-1 z-30">
-                      <Link href="/profile" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-100 hover:bg-slate-800">
-                        Profile
-                      </Link>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setMenuOpen(false);
-                        }}
-                        className="w-full text-left block px-3 py-2 text-sm text-slate-100 hover:bg-slate-800"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <button
-              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800 transition"
-              onClick={() => setOpen((prev) => !prev)}
-              aria-label="Toggle navigation"
-            >
-              <span className="space-y-1.5">
-                <span className="block h-0.5 w-4 rounded-full bg-slate-200" />
-                <span className="block h-0.5 w-4 rounded-full bg-slate-200" />
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {open && (
-          <div className="md:hidden pb-3 border-t border-slate-800/70">
-            <div className="flex flex-col gap-1 pt-3">
-              {mainLinks.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} onClick={handleNavClick} exact={link.exact} />
-              ))}
-
-              <div className="h-px bg-slate-800 my-2" />
-
-              {!isLoggedIn && (
+              ) : (
                 <>
-                  <NavLink href="/login" label="Login" onClick={handleNavClick} />
-                  <Link
-                    href="/register"
-                    onClick={handleNavClick}
-                    className="mt-1 inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
-                  >
-                    Register
-                  </Link>
-                </>
-              )}
-
-              {isLoggedIn && (
-                <>
+                  {/* Premium Button */}
                   {!isAdmin && !isActiveSubscriber && (
                     <Link
                       href="/payment"
-                      onClick={handleNavClick}
-                      className="mt-1 inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
+                      className="group relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500/50 transition-all duration-300"
                     >
-                      Go Premium
+                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="text-sm font-medium text-slate-300 group-hover:text-amber-400">
+                        Go Premium
+                      </span>
                     </Link>
                   )}
 
-                  <div className="px-3 py-2 flex items-center gap-3" onClick={() => setOpen(false)}>
-                    <Avatar fullName={(source as any)?.fullName} isAdmin={isAdmin} />
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-slate-100">{(source as any)?.fullName ?? "You"}</span>
-                        {showVerifiedBadge && <VerifiedBadge />}
-                        {isAdmin && <AdminPanelBadge />}
+                  {/* User Menu */}
+                  <div className="relative" ref={menuRef}>
+                    <button
+                      onClick={() => setMenuOpen((s) => !s)}
+                      className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-200"
+                      aria-expanded={menuOpen}
+                    >
+                      <div className="text-right hidden lg:block">
+                        <div className="text-xs font-medium text-slate-200">
+                          {(source as any)?.fullName ?? "Traveler"}
+                        </div>
+                        {isAdmin && (
+                          <div className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider text-right">
+                            Admin
+                          </div>
+                        )}
                       </div>
-                      <span className="text-xs text-slate-400">View profile</span>
-                    </div>
-                  </div>
+                      <Avatar fullName={(source as any)?.fullName} isAdmin={isAdmin} />
+                    </button>
 
-                  <NavLink href="/profile" label="Profile" onClick={handleNavClick} />
-                  <button
-                    onClick={() => {
-                      logout();
-                      setOpen(false);
-                    }}
-                    className="mt-1 px-3.5 py-2 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-left transition"
-                  >
-                    Logout
-                  </button>
+                    {/* Dropdown */}
+                    {menuOpen && (
+                      <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-xl bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 ring-1 ring-black/5 focus:outline-none overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="px-4 py-3 border-b border-white/5 bg-white/5">
+                          <p className="text-sm text-slate-100 font-medium truncate">
+                            {(source as any)?.fullName ?? "User"}
+                            {showVerifiedBadge && <VerifiedBadge />}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate mt-0.5">
+                            {(source as any)?.email ?? "user@example.com"}
+                          </p>
+                        </div>
+                        <div className="py-1">
+                          <Link
+                            href="/profile"
+                            onClick={() => setMenuOpen(false)}
+                            className="group flex items-center px-4 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
+                          >
+                            <svg className="mr-3 h-4 w-4 text-slate-500 group-hover:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Profile
+                          </Link>
+                          <div className="my-1 border-t border-white/5" />
+                          <button
+                            onClick={() => {
+                              logout();
+                              setMenuOpen(false);
+                            }}
+                            className="w-full group flex items-center px-4 py-2.5 text-sm text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+                          >
+                             <svg className="mr-3 h-4 w-4 text-rose-500/50 group-hover:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>
+
+            {/* Mobile Toggle */}
+            <div className="flex md:hidden">
+              <button
+                onClick={() => setOpen((prev) => !prev)}
+                className="inline-flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Toggle navigation"
+              >
+                {open ? <CloseIcon /> : <MenuIcon />}
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* --- Mobile Menu --- */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out border-b border-white/5 bg-slate-950/95 backdrop-blur-xl ${
+          open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-4 pt-2 pb-6 space-y-1">
+          {mainLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={handleNavClick}
+              className={`block px-3 py-3 rounded-lg text-base font-medium transition-colors ${
+                (link.exact
+                  ? usePathname() === link.href
+                  : usePathname().startsWith(link.href))
+                  ? "bg-primary-500/10 text-primary-400"
+                  : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <div className="h-px bg-white/5 my-4" />
+
+          {!isLoggedIn ? (
+            <div className="grid gap-3">
+              <Link
+                href="/login"
+                onClick={handleNavClick}
+                className="flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-slate-200 bg-white/5 rounded-xl hover:bg-white/10 transition"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                onClick={handleNavClick}
+                className="flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-500 shadow-lg shadow-primary-500/20 transition"
+              >
+                Register Now
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+               {/* Mobile Profile Card */}
+               <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-xl border border-white/5">
+                <Avatar fullName={(source as any)?.fullName} isAdmin={isAdmin} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-white truncate">
+                      {(source as any)?.fullName ?? "You"}
+                    </p>
+                    {showVerifiedBadge && <VerifiedBadge />}
+                  </div>
+                  <p className="text-xs text-slate-500 truncate">{(source as any)?.email}</p>
+                </div>
+              </div>
+
+              {!isAdmin && !isActiveSubscriber && (
+                <Link
+                  href="/payment"
+                  onClick={handleNavClick}
+                  className="flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition"
+                >
+                  Upgrade to Premium
+                </Link>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/profile"
+                  onClick={handleNavClick}
+                  className="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-slate-300 bg-slate-900 rounded-lg border border-slate-800 hover:border-slate-700 transition"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setOpen(false);
+                  }}
+                  className="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-rose-400 bg-slate-900 rounded-lg border border-slate-800 hover:border-rose-900/50 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );

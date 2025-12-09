@@ -6,8 +6,23 @@ import { useAuth } from "@/components/AuthContext";
 import api from "@/lib/api";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { 
+  MapPin, 
+  Calendar, 
+  Globe, 
+  Star, 
+  User, 
+  Mail, 
+  ShieldCheck, 
+  ShieldAlert, 
+  Edit3, 
+  Save, 
+  Loader2, 
+  Plane,
+  MessageSquare
+} from "lucide-react";
 
-type Maybe<T> = T | null | undefined;
+// --- Types ---
 
 interface Review {
   _id: string;
@@ -21,6 +36,23 @@ interface Review {
   isEdited?: boolean;
 }
 
+// --- Helper Components ---
+
+const Tag = ({ label }: { label: string }) => (
+  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+    {label}
+  </span>
+);
+
+const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
+  <div className="flex items-center gap-2 mb-4 pb-2 border-b border-white/5">
+    <Icon className="w-4 h-4 text-primary-400" />
+    <h3 className="text-sm font-semibold text-slate-100 uppercase tracking-wider">{title}</h3>
+  </div>
+);
+
+// --- Main Component ---
+
 export default function ProfilePage() {
   const { token, user: me } = useAuth();
   const search = useSearchParams();
@@ -29,6 +61,7 @@ export default function ProfilePage() {
     requestedUserId && requestedUserId !== (me as any)?._id
   );
 
+  // State
   const [bio, setBio] = useState("");
   const [currentLocation, setCurrentLocation] = useState("");
   const [travelInterests, setTravelInterests] = useState("");
@@ -44,6 +77,8 @@ export default function ProfilePage() {
   const [reviewCount, setReviewCount] = useState<number>(0);
   const [recentReviews, setRecentReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+
+  // --- Logic ---
 
   useEffect(() => {
     const profileId = requestedUserId ?? null;
@@ -61,37 +96,22 @@ export default function ProfilePage() {
       try {
         let data: any = null;
         if (profileId) {
-          const res = await api.get(`/users/${profileId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await api.get(`/users/${profileId}`, { headers: { Authorization: `Bearer ${token}` } });
           data = res.data?.data ?? res.data ?? null;
           setProfile(data ?? null);
         } else {
-          const res = await api.get("/users/me/self", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await api.get("/users/me/self", { headers: { Authorization: `Bearer ${token}` } });
           data = res.data?.data ?? res.data ?? null;
           setProfile(data ?? null);
 
           setBio(data?.bio ?? "");
           setCurrentLocation(data?.currentLocation ?? "");
-          setTravelInterests(
-            Array.isArray(data?.travelInterests)
-              ? data.travelInterests.join(", ")
-              : data?.travelInterests ?? ""
-          );
-          setVisitedCountries(
-            Array.isArray(data?.visitedCountries)
-              ? data.visitedCountries.join(", ")
-              : data?.visitedCountries ?? ""
-          );
+          setTravelInterests(Array.isArray(data?.travelInterests) ? data.travelInterests.join(", ") : data?.travelInterests ?? "");
+          setVisitedCountries(Array.isArray(data?.visitedCountries) ? data.visitedCountries.join(", ") : data?.visitedCountries ?? "");
         }
 
-        // If the user document already contains avgRating/reviewCount, use them as immediate fallback
         if (data) {
-          setAvgRating(
-            typeof data.avgRating === "number" ? data.avgRating : (prev => prev)(null)
-          );
+          setAvgRating(typeof data.avgRating === "number" ? data.avgRating : (prev => prev)(null));
           setReviewCount(typeof data.reviewCount === "number" ? data.reviewCount : 0);
         }
 
@@ -99,17 +119,13 @@ export default function ProfilePage() {
         if (idForReviews) {
           fetchReviews(idForReviews as string);
         } else {
-          setAvgRating((prev) => prev ?? null);
+          setAvgRating(null);
           setReviewCount(0);
           setRecentReviews([]);
         }
       } catch (err: any) {
         console.error(err);
         setFetchError(err?.response?.data?.message || "Failed to load profile");
-        setProfile(null);
-        setAvgRating(null);
-        setReviewCount(0);
-        setRecentReviews([]);
       } finally {
         setLoading(false);
       }
@@ -119,13 +135,10 @@ export default function ProfilePage() {
       if (!token) return;
       setLoadingReviews(true);
       try {
-        const res = await api.get(`/reviews?revieweeId=${revieweeId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get(`/reviews?revieweeId=${revieweeId}`, { headers: { Authorization: `Bearer ${token}` } });
         const data: Review[] = res.data?.data || [];
 
         if (!Array.isArray(data) || data.length === 0) {
-          // If no reviews returned, keep any avgRating/reviewCount from user doc or clear
           if (profile?.avgRating == null) setAvgRating(null);
           if (profile?.reviewCount == null) setReviewCount(0);
           setRecentReviews([]);
@@ -133,30 +146,19 @@ export default function ProfilePage() {
           const count = data.length;
           const sum = data.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
           const avg = sum / count;
-          const sorted = [...data].sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
           setAvgRating(Number.isFinite(avg) ? Math.round(avg * 10) / 10 : null);
           setReviewCount(count);
-          setRecentReviews(sorted.slice(0, 5));
+          setRecentReviews(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5));
         }
       } catch (err: any) {
-        if (err?.response?.status === 404) {
-          setAvgRating(null);
-          setReviewCount(0);
-          setRecentReviews([]);
-        } else {
-          console.error("Failed to fetch reviews", err);
-        }
+         // Silently fail for 404 on reviews
       } finally {
         setLoadingReviews(false);
       }
     };
 
     fetchProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, requestedUserId, me]);
+  }, [token, requestedUserId, me]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     if (!token) return;
@@ -168,70 +170,33 @@ export default function ProfilePage() {
         {
           bio,
           currentLocation,
-          travelInterests: travelInterests
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          visitedCountries: visitedCountries
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
+          travelInterests: travelInterests.split(",").map((s) => s.trim()).filter(Boolean),
+          visitedCountries: visitedCountries.split(",").map((s) => s.trim()).filter(Boolean),
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessage("Profile updated.");
+      setMessage("Profile updated successfully.");
+      setTimeout(() => setMessage(null), 3000);
+      
+      // Refresh local profile data
       try {
-        const res = await api.get("/users/me/self", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = res.data?.data ?? res.data ?? null;
-        setProfile(data ?? null);
+        const res = await api.get("/users/me/self", { headers: { Authorization: `Bearer ${token}` } });
+        setProfile(res.data?.data ?? res.data ?? null);
       } catch (e) {}
-    } catch (err: any) {
-      console.error(err);
+    } catch (err) {
       setMessage("Failed to update profile.");
     } finally {
       setSaving(false);
     }
   };
 
-  const isError = message?.toLowerCase().includes("failed");
+  if (loading) return <Protected><div className="flex h-screen items-center justify-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin text-primary-500" /></div></Protected>;
+  if (fetchError) return <Protected><div className="p-10 text-center text-rose-400 bg-rose-500/10 rounded-xl m-10 border border-rose-500/20">{fetchError}</div></Protected>;
+  if (!profile) return <Protected><div className="p-10 text-center text-slate-400">Profile not found.</div></Protected>;
 
-  if (loading) {
-    return (
-      <Protected>
-        <div className="p-6 text-slate-400">Loading profile...</div>
-      </Protected>
-    );
-  }
-
-  if (fetchError) {
-    return (
-      <Protected>
-        <div className="p-6 text-red-400">{fetchError}</div>
-      </Protected>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <Protected>
-        <div className="p-6 text-slate-400">No profile available</div>
-      </Protected>
-    );
-  }
-
-  // Determine admin role (case-insensitive)
-  const isAdmin =
-    typeof profile?.role === "string" &&
-    profile.role.toLowerCase() === "admin";
-
-  const arrToString = (val: any) => {
-    if (!val) return "-";
-    if (Array.isArray(val)) return val.join(", ");
-    if (typeof val === "string") return val || "-";
-    return String(val);
-  };
+  const isAdmin = typeof profile?.role === "string" && profile.role.toLowerCase() === "admin";
+  const isVerifiedSubscriber = profile?.subscriptionStatus === "ACTIVE";
+  const initials = (profile.fullName || "U").substring(0, 2).toUpperCase();
 
   const travelPlanIdFromReview = (r: Review): string | null => {
     if (!r.travelPlan) return null;
@@ -239,365 +204,298 @@ export default function ProfilePage() {
     return (r.travelPlan as any)?._id ?? null;
   };
 
-  const isVerifiedSubscriber = profile?.subscriptionStatus === "ACTIVE";
-
   return (
     <Protected>
-      <div className="max-w-2xl space-y-6">
-        <section className="space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary-500/20 bg-primary-500/10 px-3 py-1 text-[11px] font-medium text-primary-200">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary-400" />
-            <span>
-              {viewingOther
-                ? "Traveler profile (view only)"
-                : "Your public traveler profile"}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl md:text-3xl font-semibold text-slate-50">
-                  {viewingOther
-                    ? `${profile.fullName || profile.name || "User"}`
-                    : "My profile"}
-                </h1>
+      <div className="min-h-screen bg-slate-950 pb-20">
+        
+        {/* --- Hero Banner --- */}
+        <div className="relative h-48 md:h-64 w-full bg-slate-900 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-900 opacity-80" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl" />
+        </div>
 
-                {isVerifiedSubscriber && (
-                  <span
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-300"
-                    title="Verified subscriber"
-                    aria-label="Verified subscriber"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="h-4 w-4"
-                      aria-hidden
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12 2a1 1 0 0 1 .894.553l1.382 2.764 3.05.444a1 1 0 0 1 .553 1.705l-2.208 2.152.521 3.036a1 1 0 0 1-1.451 1.054L12 15.347l-2.731 1.961a1 1 0 0 1-1.451-1.054l.521-3.036L5.1 7.466a1 1 0 0 1 .553-1.705l3.05-.444L10.985 2.55A1 1 0 0 1 12 2zm1.47 7.03a1 1 0 0 0-1.94 0l-.2 1.05a.75.75 0 0 0 .22.63l.72.72a.75.75 0 0 0 1.06 0l1.07-1.07a.75.75 0 0 0 .22-.63l-.22-1.05z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span>Verified</span>
-                  </span>
-                )}
-              </div>
-
-              <p className="text-sm text-slate-400 mt-1">
-                {viewingOther
-                  ? "Viewing this user's public profile. You cannot edit another user's profile from here."
-                  : "Update your details so other travelers know who they’re exploring with."}
-              </p>
-            </div>
-
-            <div>
-              {loadingReviews ? (
-                <div className="text-sm text-slate-400">Loading reviews…</div>
-              ) : reviewCount > 0 && avgRating != null ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-yellow-500/10 px-3 py-1 text-[13px] font-semibold text-yellow-300">
-                  <span>★</span>
-                  <span>{avgRating.toFixed(1)}</span>
-                  <span className="text-xs text-slate-400">({reviewCount})</span>
-                </div>
-              ) : // if profile has avgRating/reviewCount from DB, show them even if no reviews fetched
-              profile?.avgRating != null && profile?.reviewCount != null ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-yellow-500/10 px-3 py-1 text-[13px] font-semibold text-yellow-300">
-                  <span>★</span>
-                  <span>{(profile.avgRating as number).toFixed(1)}</span>
-                  <span className="text-xs text-slate-400">({profile.reviewCount})</span>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1 text-[13px] text-slate-300">
-                  No reviews yet
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <section className="relative overflow-hidden bg-slate-950/80 border border-slate-800 rounded-2xl p-5 md:p-6 space-y-3 text-sm shadow-xl shadow-black/40">
-          <div className="pointer-events-none absolute -top-20 -right-10 h-32 w-32 rounded-full bg-primary-500/15 blur-3xl" />
-
-          <h2 className="text-sm font-semibold text-slate-200 mb-1">Account</h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <p>
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Name
-              </span>
-              <br />
-              <span className="text-slate-100">
-                {profile?.fullName ?? profile?.name ?? "—"}
-              </span>
-            </p>
-
-            <p>
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Email
-              </span>
-              <br />
-              <span className="text-slate-100">{profile?.email ?? "—"}</span>
-            </p>
-
-            <p>
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Role
-              </span>
-              <br />
-              <span className="inline-flex items-center rounded-full bg-slate-900/80 border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200">
-                {profile?.role ?? "USER"}
-              </span>
-            </p>
-
-            <p>
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                User ID
-              </span>
-              <br />
-              <span className="text-slate-400 text-xs select-all">{profile?._id ?? profile?.id ?? "-"}</span>
-            </p>
-
-            {/* HIDE these fields for admin users */}
-            {!isAdmin && (
-              <>
-                <p>
-                  <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Verified
-                  </span>
-                  <br />
-                  <span className="text-slate-100">{profile?.isVerified ? "Yes" : "No"}</span>
-                </p>
-
-                <p>
-                  <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Blocked
-                  </span>
-                  <br />
-                  <span className="text-slate-100">{profile?.isBlocked ? "Yes" : "No"}</span>
-                </p>
-
-                <p>
-                  <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Subscription
-                  </span>
-                  <br />
-                  <span className="text-slate-100">{profile?.subscriptionStatus ?? "NONE"}</span>
-                </p>
-
-                <p>
-                  <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Plan
-                  </span>
-                  <br />
-                  <span className="text-slate-100">{profile?.subscriptionPlan ?? "-"}</span>
-                </p>
-
-                <p>
-                  <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Sub. ends
-                  </span>
-                  <br />
-                  <span className="text-slate-100">
-                    {profile?.subscriptionEndAt ? new Date(profile.subscriptionEndAt).toLocaleString() : "-"}
-                  </span>
-                </p>
-              </>
-            )}
-          </div>
-        </section>
-
-        {/* ABOUT & TRAVEL DETAILS — hide entirely for admin users */}
-        {!isAdmin && (
-          <section className="relative overflow-hidden bg-slate-950/80 border border-slate-800 rounded-2xl p-5 md:p-6 space-y-4 text-sm shadow-xl shadow-black/40">
-            <div className="pointer-events-none absolute -bottom-20 -left-10 h-32 w-32 rounded-full bg-sky-500/15 blur-3xl" />
-
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-50">
-                  About &amp; travel details
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {viewingOther ? "Public details" : "These details help others understand your style and experience."}
-                </p>
-              </div>
-            </div>
-
-            {viewingOther ? (
-              <div className="space-y-3 text-sm text-slate-300">
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200">Bio</h3>
-                  <p className="mt-1 text-slate-400">{profile?.bio ?? "No bio provided."}</p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200">Current location</h3>
-                  <p className="mt-1 text-slate-400">{profile?.currentLocation ?? "-"}</p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200">Travel interests</h3>
-                  <p className="mt-1 text-slate-400">{arrToString(profile?.travelInterests)}</p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200">Visited countries</h3>
-                  <p className="mt-1 text-slate-400">{arrToString(profile?.visitedCountries)}</p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200">Member since</h3>
-                  <p className="mt-1 text-slate-400">
-                    {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : "-"}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200 mt-2">Recent reviews</h3>
-                  {loadingReviews ? (
-                    <p className="text-xs text-slate-400 mt-1">Loading reviews…</p>
-                  ) : recentReviews.length === 0 ? (
-                    <p className="text-xs text-slate-400 mt-1">No reviews yet.</p>
-                  ) : (
-                    <div className="space-y-2 mt-2">
-                      {recentReviews.map((r) => {
-                        const tpId = travelPlanIdFromReview(r);
-                        const card = (
-                          <div key={r._id} className="border rounded-lg p-3 bg-slate-900/70">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="font-medium text-slate-100">
-                                  {typeof r.reviewer === "string" ? "Traveler" : (r.reviewer as any).fullName ?? "Traveler"}
-                                </div>
-                                <div className="text-[11px] text-slate-400">
-                                  {new Date(r.createdAt).toLocaleDateString()}
-                                  {r.isEdited && " • edited"}
-                                </div>
-                              </div>
-                              <div className="text-sm font-semibold text-slate-100">{r.rating} / 5 ★</div>
-                            </div>
-                            {r.comment && (
-                              <p className="mt-2 text-slate-200 text-sm whitespace-pre-wrap">{r.comment}</p>
-                            )}
-                          </div>
-                        );
-
-                        return tpId ? (
-                          <Link key={r._id} href={`/travel-plans/${tpId}`} className="block hover:opacity-95 transition">
-                            {card}
-                          </Link>
-                        ) : (
-                          <div key={r._id}>{card}</div>
-                        );
-                      })}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative -mt-20">
+          
+          {/* --- Profile Header Card --- */}
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-6 mb-8">
+            
+            {/* Avatar */}
+            <div className="relative group">
+               <div className="h-32 w-32 md:h-40 md:w-40 rounded-full border-4 border-slate-950 bg-gradient-to-br from-slate-700 to-slate-900 shadow-2xl flex items-center justify-center text-4xl md:text-5xl font-bold text-white relative overflow-hidden">
+                  {initials}
+                  {/* Subtle shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+               </div>
+               {isVerifiedSubscriber && (
+                 <div className="absolute bottom-2 right-2 bg-slate-950 rounded-full p-1" title="Verified Subscriber">
+                    <div className="bg-emerald-500 text-white p-1 rounded-full shadow-lg shadow-emerald-500/40">
+                      <ShieldCheck className="w-5 h-5" />
                     </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <label className="text-slate-200 text-xs font-medium">Bio</label>
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    rows={3}
-                    placeholder="Tell people how you like to travel, your vibe, and any must-do experiences."
-                    className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-500/80 focus:ring-2 focus:ring-primary-500/40 resize-none"
-                  />
-                </div>
+                 </div>
+               )}
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-200 text-xs font-medium">Current location</label>
-                  <input
-                    value={currentLocation}
-                    onChange={(e) => setCurrentLocation(e.target.value)}
-                    placeholder="City, Country (e.g. Bangalore, India)"
-                    className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-500/80 focus:ring-2 focus:ring-primary-500/40"
-                  />
-                </div>
+            {/* Name & Stats */}
+            <div className="flex-1 pb-2">
+               <div className="flex flex-col md:flex-row md:items-center gap-3">
+                 <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+                   {profile.fullName || profile.name || "Unknown User"}
+                 </h1>
+                 <div className="flex gap-2">
+                    {isAdmin && (
+                      <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
+                        Admin
+                      </span>
+                    )}
+                 </div>
+               </div>
+               
+               <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-slate-500" />
+                    {profile.currentLocation || "Location unknown"}
+                  </div>
+                  <div className="hidden md:block w-1 h-1 rounded-full bg-slate-700" />
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-slate-500" />
+                    Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : "-"}
+                  </div>
+               </div>
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-200 text-xs font-medium">Travel interests (comma separated)</label>
-                  <input
-                    value={travelInterests}
-                    onChange={(e) => setTravelInterests(e.target.value)}
-                    placeholder="Beach, hiking, food tours, nightlife, road trips"
-                    className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-500/80 focus:ring-2 focus:ring-primary-500/40"
-                  />
-                </div>
+            {/* Rating Stat (Top Right) */}
+            <div className="flex items-center gap-4 bg-slate-900/80 border border-white/5 backdrop-blur-md px-5 py-3 rounded-2xl shadow-xl mb-2">
+               <div className="text-right">
+                  <div className="text-2xl font-bold text-white leading-none">
+                    {avgRating ? avgRating.toFixed(1) : "—"}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Rating</div>
+               </div>
+               <div className="h-10 w-px bg-white/10" />
+               <div>
+                  <div className="text-2xl font-bold text-white leading-none">
+                    {reviewCount}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Reviews</div>
+               </div>
+            </div>
+          </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-200 text-xs font-medium">Visited countries (comma separated)</label>
-                  <input
-                    value={visitedCountries}
-                    onChange={(e) => setVisitedCountries(e.target.value)}
-                    placeholder="India, Thailand, France, Japan"
-                    className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-500/80 focus:ring-2 focus:ring-primary-500/40"
-                  />
-                </div>
-
-                {message && (
-                  <p className={`text-xs mt-2 px-3 py-2 rounded-lg border ${isError ? "text-red-300 bg-red-500/5 border-red-500/40" : "text-emerald-300 bg-emerald-500/5 border-emerald-500/40"}`}>
-                    {message}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between gap-3 pt-1">
-                  <p className="text-[11px] text-slate-500">
-                    Your profile may be visible to other users on trip requests and matches.
-                  </p>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="inline-flex items-center justify-center bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary-600/30 transition"
-                  >
-                    {saving ? "Saving..." : "Save changes"}
-                  </button>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-slate-200 mt-2">Recent reviews</h3>
-                  {loadingReviews ? (
-                    <p className="text-xs text-slate-400 mt-1">Loading reviews…</p>
-                  ) : recentReviews.length === 0 ? (
-                    <p className="text-xs text-slate-400 mt-1">No reviews yet.</p>
-                  ) : (
-                    <div className="space-y-2 mt-2">
-                      {recentReviews.map((r) => {
-                        const tpId = travelPlanIdFromReview(r);
-                        const card = (
-                          <div key={r._id} className="border rounded-lg p-3 bg-slate-900/70">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="font-medium text-slate-100">{typeof r.reviewer === "string" ? "Traveler" : (r.reviewer as any).fullName ?? "Traveler"}</div>
-                                <div className="text-[11px] text-slate-400">
-                                  {new Date(r.createdAt).toLocaleDateString()}
-                                  {r.isEdited && " • edited"}
-                                </div>
-                              </div>
-                              <div className="text-sm font-semibold text-slate-100">{r.rating} / 5 ★</div>
-                            </div>
-                            {r.comment && <p className="mt-2 text-slate-200 text-sm whitespace-pre-wrap">{r.comment}</p>}
+          {/* --- Content Grid --- */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left Column: Vitals & Private Info */}
+            <div className="space-y-6">
+               {/* Contact / Private Details (Only visible to Admin or Self) */}
+               {(!viewingOther || isAdmin) && (
+                 <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-5 backdrop-blur-sm">
+                    <SectionHeader icon={User} title="Account Details" />
+                    <div className="space-y-4">
+                       <div className="group">
+                          <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Email</label>
+                          <div className="flex items-center gap-2 text-slate-300 text-sm">
+                             <Mail className="w-4 h-4 text-slate-600" />
+                             {profile.email}
                           </div>
-                        );
-
-                        return tpId ? (
-                          <Link key={r._id} href={`/travel-plans/${tpId}`} className="block hover:opacity-95 transition">
-                            {card}
-                          </Link>
-                        ) : (
-                          <div key={r._id}>{card}</div>
-                        );
-                      })}
+                       </div>
+                       
+                       <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div>
+                            <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Status</label>
+                            <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${profile.isBlocked ? "bg-rose-500/10 text-rose-400" : "bg-emerald-500/10 text-emerald-400"}`}>
+                               {profile.isBlocked ? <ShieldAlert className="w-3 h-3"/> : <ShieldCheck className="w-3 h-3"/>}
+                               {profile.isBlocked ? "Blocked" : "Active"}
+                            </span>
+                          </div>
+                          <div>
+                             <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Plan</label>
+                             <span className="text-slate-300 text-sm">{profile.subscriptionPlan || "Free"}</span>
+                          </div>
+                       </div>
                     </div>
+                 </div>
+               )}
+
+               {/* Stats / Countries */}
+               <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-5 backdrop-blur-sm">
+                  <SectionHeader icon={Globe} title="Travel Stats" />
+                  <div className="space-y-4">
+                     <div>
+                        <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-2">Visited Countries</label>
+                        {viewingOther ? (
+                           <div className="flex flex-wrap gap-2">
+                              {profile.visitedCountries?.length > 0 ? (
+                                 (Array.isArray(profile.visitedCountries) ? profile.visitedCountries : profile.visitedCountries.split(',')).map((c: string, i: number) => (
+                                    <Tag key={i} label={c.trim()} />
+                                 ))
+                              ) : (
+                                 <span className="text-sm text-slate-500 italic">No countries listed yet.</span>
+                              )}
+                           </div>
+                        ) : (
+                           <input 
+                              value={visitedCountries}
+                              onChange={(e) => setVisitedCountries(e.target.value)}
+                              placeholder="e.g. Japan, France, Brazil"
+                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+                           />
+                        )}
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* Right Column: Bio, Interests, Reviews */}
+            <div className="lg:col-span-2 space-y-6">
+               
+               {/* Bio & Interests */}
+               <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-3xl" />
+                  
+                  <div className="flex items-center justify-between mb-4">
+                     <SectionHeader icon={Edit3} title="About" />
+                     {!viewingOther && saving && <span className="text-xs text-primary-400 animate-pulse">Saving changes...</span>}
+                     {!viewingOther && !saving && message && <span className="text-xs text-emerald-400">{message}</span>}
+                  </div>
+
+                  <div className="space-y-6 relative z-10">
+                     <div>
+                        <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-2">Bio</label>
+                        {viewingOther ? (
+                           <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                              {profile.bio || "This user hasn't written a bio yet."}
+                           </p>
+                        ) : (
+                           <textarea 
+                              value={bio}
+                              onChange={(e) => setBio(e.target.value)}
+                              rows={4}
+                              placeholder="Tell the community about your travel style..."
+                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all resize-none"
+                           />
+                        )}
+                     </div>
+
+                     <div>
+                        <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-2">Travel Interests</label>
+                        {viewingOther ? (
+                           <div className="flex flex-wrap gap-2">
+                              {profile.travelInterests?.length > 0 ? (
+                                 (Array.isArray(profile.travelInterests) ? profile.travelInterests : profile.travelInterests.split(',')).map((tag: string, i: number) => (
+                                    <Tag key={i} label={tag.trim()} />
+                                 ))
+                              ) : (
+                                 <span className="text-sm text-slate-500 italic">No interests listed.</span>
+                              )}
+                           </div>
+                        ) : (
+                           <div className="space-y-2">
+                              <input 
+                                 value={travelInterests}
+                                 onChange={(e) => setTravelInterests(e.target.value)}
+                                 placeholder="e.g. Hiking, Food, History"
+                                 className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+                              />
+                              {!viewingOther && (
+                                <div className="grid grid-cols-2 gap-4">
+                                   <div>
+                                     <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Current Location</label>
+                                     <input 
+                                       value={currentLocation}
+                                       onChange={(e) => setCurrentLocation(e.target.value)}
+                                       placeholder="City, Country"
+                                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+                                     />
+                                   </div>
+                                </div>
+                              )}
+                           </div>
+                        )}
+                     </div>
+
+                     {!viewingOther && (
+                        <div className="pt-2 flex justify-end">
+                           <button 
+                              onClick={handleSave}
+                              disabled={saving}
+                              className="inline-flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-primary-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                           >
+                              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                              Save Changes
+                           </button>
+                        </div>
+                     )}
+                  </div>
+               </div>
+
+               {/* Reviews Section */}
+               <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
+                  <SectionHeader icon={Star} title="Community Reviews" />
+                  
+                  {loadingReviews ? (
+                     <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-slate-600" /></div>
+                  ) : recentReviews.length === 0 ? (
+                     <div className="text-center py-10 bg-slate-950/50 rounded-xl border border-dashed border-slate-800">
+                        <MessageSquare className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+                        <p className="text-slate-500 text-sm">No reviews received yet.</p>
+                     </div>
+                  ) : (
+                     <div className="space-y-4">
+                        {recentReviews.map((r) => {
+                           const tpId = travelPlanIdFromReview(r);
+                           const ReviewContent = (
+                              <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-colors">
+                                 <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-2">
+                                       <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                                          {(typeof r.reviewer === 'string' ? "T" : (r.reviewer as any).fullName?.[0]) || "U"}
+                                       </div>
+                                       <div>
+                                          <p className="text-sm font-medium text-slate-200">
+                                             {typeof r.reviewer === "string" ? "Traveler" : (r.reviewer as any).fullName ?? "Traveler"}
+                                          </p>
+                                          <p className="text-[10px] text-slate-500">
+                                             {new Date(r.createdAt).toLocaleDateString()} {r.isEdited && "(edited)"}
+                                          </p>
+                                       </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-md border border-yellow-500/20">
+                                       <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                       <span className="text-xs font-bold text-yellow-500">{r.rating}</span>
+                                    </div>
+                                 </div>
+                                 {r.comment && (
+                                    <p className="text-sm text-slate-400 leading-relaxed pl-10">
+                                       "{r.comment}"
+                                    </p>
+                                 )}
+                                 {tpId && (
+                                    <div className="mt-3 pl-10">
+                                       <span className="inline-flex items-center gap-1 text-[10px] text-primary-400 hover:text-primary-300 transition-colors">
+                                          <Plane className="w-3 h-3" />
+                                          View Related Trip
+                                       </span>
+                                    </div>
+                                 )}
+                              </div>
+                           );
+
+                           return tpId ? (
+                              <Link key={r._id} href={`/travel-plans/${tpId}`} className="block">
+                                 {ReviewContent}
+                              </Link>
+                           ) : (
+                              <div key={r._id}>{ReviewContent}</div>
+                           );
+                        })}
+                     </div>
                   )}
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+               </div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </Protected>
   );
