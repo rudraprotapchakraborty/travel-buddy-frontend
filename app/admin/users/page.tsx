@@ -292,12 +292,9 @@ export default function ManageUsersPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
-                      <Link
-                        href={`/profile/${u._id}`}
-                        className="font-medium text-slate-100 hover:text-primary-400"
-                      >
-                        {u.fullName}
-                      </Link>
+<Link href={`/profile?user=${encodeURIComponent(u._id)}`} className="font-medium ...">
+  {u.fullName}
+</Link>
                       <span className="text-xs text-slate-400">{u.email}</span>
                       {u.verified && (
                         <span className="mt-1 inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">

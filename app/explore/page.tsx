@@ -15,7 +15,6 @@ interface MatchPlan {
   user: {
     _id: string;
     fullName: string;
-    avgRating?: number;
     currentLocation?: string;
   };
 }
@@ -82,7 +81,6 @@ export default function ExplorePage() {
           onSubmit={handleSearch}
           className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80 backdrop-blur shadow-xl shadow-black/40 p-4 md:p-5 grid md:grid-cols-5 gap-3 text-sm"
         >
-          {/* subtle glow */}
           <div className="pointer-events-none absolute -inset-x-10 -top-20 h-32 bg-gradient-to-b from-primary-500/20 via-transparent to-transparent opacity-60" />
 
           <div className="relative space-y-1.5 md:col-span-2">
@@ -207,16 +205,6 @@ export default function ExplorePage() {
                     </div>
 
                     <div className="text-right text-xs text-slate-400 flex flex-col items-end justify-between">
-                      {plan.user.avgRating != null && plan.user.avgRating > 0 ? (
-                        <p className="inline-flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-0.5 text-[11px] text-yellow-300">
-                          <span>★</span>
-                          <span>{plan.user.avgRating.toFixed(1)}</span>
-                        </p>
-                      ) : (
-                        <p className="rounded-full bg-slate-800/80 px-2 py-0.5 text-[11px] text-slate-300">
-                          New host
-                        </p>
-                      )}
                       <span className="mt-3 text-[11px] text-primary-300">
                         View details →
                       </span>
