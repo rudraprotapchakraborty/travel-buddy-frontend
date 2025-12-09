@@ -3,8 +3,9 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import api from "@/lib/api";
 
 type NavLinkProps = {
   href: string;
@@ -17,8 +18,6 @@ const NavLink = ({ href, label, onClick, exact = false }: NavLinkProps) => {
   const pathname = usePathname();
   const search = useSearchParams();
 
-  // Special-case: when viewing another user's profile via ?user=ID,
-  // we do NOT want the "/profile" nav link to appear active.
   const viewingOtherProfile = pathname === "/profile" && Boolean(search?.get("user"));
 
   const active = exact
@@ -59,10 +58,109 @@ const Avatar = ({ fullName }: { fullName?: string | null }) => {
   );
 };
 
+const VerifiedBadge = () => (
+  <span
+    className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500 text-white text-xs"
+    title="Verified"
+    aria-hidden="true"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor" aria-hidden="true">
+      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 01.094 1.32l-6.5 8a1 1 0 01-1.53.09l-3.5-3.75a1 1 0 111.48-1.34l2.84 3.04 5.73-7.06a1 1 0 011.39-.34z" clipRule="evenodd" />
+    </svg>
+  </span>
+);
+
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const [open, setOpen] = useState(false); // mobile menu
-  const [menuOpen, setMenuOpen] = useState(false); // user dropdown
+  const auth = useAuth() as any;
+  const userFromAuth = auth?.user ?? null;
+  const token = auth?.token ?? null;
+  const logout = auth?.logout ?? (() => {});
+  const refreshUser = auth?.refreshUser;
+
+  const [profile, setProfile] = useState<any | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  const mountedRef = useRef(true);
+
+  const fetchProfile = useCallback(async () => {
+    if (!mountedRef.current) return;
+    if (!token) {
+      setProfile(null);
+      return;
+    }
+    setProfileLoading(true);
+    try {
+      const res = await api.get("/users/me/self", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = res.data?.data ?? res.data ?? null;
+      if (!mountedRef.current) return;
+      setProfile(data ?? null);
+    } catch (err) {
+      if (!mountedRef.current) return;
+      setProfile(null);
+    } finally {
+      if (mountedRef.current) setProfileLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    fetchProfile();
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    const onUserUpdated = async () => {
+      if (typeof refreshUser === "function") {
+        try {
+          await refreshUser();
+        } catch {}
+      }
+      try {
+        await fetchProfile();
+      } catch {}
+    };
+    window.addEventListener("user-updated", onUserUpdated);
+    return () => window.removeEventListener("user-updated", onUserUpdated);
+  }, [fetchProfile, refreshUser]);
+
+  const source = profile ?? userFromAuth ?? null;
+  const isLoggedIn = Boolean(source && typeof source === "object" && Object.keys(source).length > 0);
+
+  const rawStatus = String((source as any)?.subscriptionStatus ?? "");
+  const normalizedStatus = rawStatus
+    .trim()
+    .replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "")
+    .toLowerCase();
+
+  const isActiveSubscriber = isLoggedIn && normalizedStatus === "active";
+  const showVerifiedBadge = Boolean((source as any)?.isVerified) || isActiveSubscriber;
+  const isAdmin = (source as any)?.role === "ADMIN";
+
+  const mainLinksLoggedOut = [
+    { href: "/explore", label: "Explore Travelers" },
+    { href: "/travel-plans", label: "Find Travel Buddy" },
+  ];
+
+  const mainLinksUser = [
+    { href: "/explore", label: "Explore Travelers" },
+    { href: "/travel-plans", label: "My Travel Plans" },
+    { href: "/dashboard", label: "Dashboard" },
+  ];
+
+  const mainLinksAdmin = [
+    { href: "/admin/users", label: "Manage Users" },
+    { href: "/admin/travel-plans", label: "Manage Travel Plans" },
+    { href: "/admin", label: "Dashboard", exact: true },
+  ];
+
+  const mainLinks = !isLoggedIn ? mainLinksLoggedOut : isAdmin ? mainLinksAdmin : mainLinksUser;
+
+  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const handleNavClick = () => {
@@ -88,33 +186,10 @@ export default function Navbar() {
     };
   }, []);
 
-  // Build nav items based on auth state / role
-  const isAdmin = user?.role === "ADMIN";
-
-  const mainLinksLoggedOut = [
-    { href: "/explore", label: "Explore Travelers" },
-    { href: "/travel-plans", label: "Find Travel Buddy" },
-  ];
-
-  const mainLinksUser = [
-    { href: "/explore", label: "Explore Travelers" },
-    { href: "/travel-plans", label: "My Travel Plans" },
-    { href: "/dashboard", label: "Dashboard" },
-  ];
-
-  const mainLinksAdmin = [
-    { href: "/admin/users", label: "Manage Users" },
-    { href: "/admin/travel-plans", label: "Manage Travel Plans" },
-    { href: "/admin", label: "Dashboard", exact: true },
-  ];
-
-  const mainLinks = !user ? mainLinksLoggedOut : isAdmin ? mainLinksAdmin : mainLinksUser;
-
   return (
     <nav className="w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-20">
       <div className="max-w-5xl mx-auto px-4">
         <div className="flex items-center justify-between py-3 gap-3">
-          {/* Left: Brand + desktop links */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 select-none" onClick={handleNavClick}>
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary-500 to-sky-400 text-lg">
@@ -128,16 +203,14 @@ export default function Navbar() {
 
             <div className="hidden md:flex items-center gap-1 ml-4">
               {mainLinks.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} /* @ts-ignore */ exact={link.exact} />
+                <NavLink key={link.href} href={link.href} label={link.label} exact={link.exact} />
               ))}
             </div>
           </div>
 
-          {/* Right: Auth actions + mobile toggle */}
           <div className="flex items-center gap-2">
-            {/* Desktop user area */}
             <div className="hidden md:flex items-center gap-3">
-              {!user && (
+              {!isLoggedIn && (
                 <>
                   <NavLink href="/login" label="Login" />
                   <Link
@@ -149,16 +222,31 @@ export default function Navbar() {
                 </>
               )}
 
-              {user && (
-                <div className="relative" ref={menuRef}>
+              {isLoggedIn && !isActiveSubscriber && (
+                <Link
+                  href="/payment"
+                  className="inline-flex items-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
+                >
+                  Go Premium
+                </Link>
+              )}
+
+              {isLoggedIn && (
+                <div className="relative flex items-center gap-2" ref={menuRef}>
                   <button
                     onClick={() => setMenuOpen((s) => !s)}
                     aria-expanded={menuOpen}
                     aria-haspopup="menu"
                     className="inline-flex items-center gap-3 px-2 py-1 rounded-lg hover:bg-slate-900 transition"
                   >
-                    <Avatar fullName={user.fullName} />
-                    <span className="text-sm text-slate-100 font-medium">{user.fullName ? user.fullName.split(" ")[0] : "You"}</span>
+                    <Avatar fullName={(source as any)?.fullName} />
+                    <div className="flex items-center">
+                      <span className="text-sm text-slate-100 font-medium">
+                        {(source as any)?.fullName ? String((source as any).fullName).split(" ")[0] : "You"}
+                      </span>
+                      {showVerifiedBadge && <VerifiedBadge />}
+                    </div>
+
                     <svg
                       className={`h-4 w-4 transition-transform ${menuOpen ? "rotate-180" : "rotate-0"}`}
                       viewBox="0 0 20 20"
@@ -174,7 +262,7 @@ export default function Navbar() {
                   </button>
 
                   {menuOpen && (
-                    <div className="absolute right-0 mt-2 w-40 rounded-md bg-slate-900 border border-slate-800 shadow-lg py-1 z-30">
+                    <div className="absolute right-0 mt-2 w-48 rounded-md bg-slate-900 border border-slate-800 shadow-lg py-1 z-30">
                       <Link href="/profile" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-100 hover:bg-slate-800">
                         Profile
                       </Link>
@@ -193,7 +281,6 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile menu button */}
             <button
               className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800 transition"
               onClick={() => setOpen((prev) => !prev)}
@@ -207,17 +294,16 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu */}
         {open && (
           <div className="md:hidden pb-3 border-t border-slate-800/70">
             <div className="flex flex-col gap-1 pt-3">
               {mainLinks.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} onClick={handleNavClick} /* @ts-ignore */ exact={link.exact} />
+                <NavLink key={link.href} href={link.href} label={link.label} onClick={handleNavClick} exact={link.exact} />
               ))}
 
               <div className="h-px bg-slate-800 my-2" />
 
-              {!user && (
+              {!isLoggedIn && (
                 <>
                   <NavLink href="/login" label="Login" onClick={handleNavClick} />
                   <Link
@@ -230,12 +316,25 @@ export default function Navbar() {
                 </>
               )}
 
-              {user && (
+              {isLoggedIn && (
                 <>
+                  {!isActiveSubscriber && (
+                    <Link
+                      href="/payment"
+                      onClick={handleNavClick}
+                      className="mt-1 inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm shadow-primary-600/30 transition"
+                    >
+                      Go Premium
+                    </Link>
+                  )}
+
                   <div className="px-3 py-2 flex items-center gap-3" onClick={() => setOpen(false)}>
-                    <Avatar fullName={user.fullName} />
+                    <Avatar fullName={(source as any)?.fullName} />
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-slate-100">{user.fullName ?? "You"}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-slate-100">{(source as any)?.fullName ?? "You"}</span>
+                        {showVerifiedBadge && <VerifiedBadge />}
+                      </div>
                       <span className="text-xs text-slate-400">View profile</span>
                     </div>
                   </div>
