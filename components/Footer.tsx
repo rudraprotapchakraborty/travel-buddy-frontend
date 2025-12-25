@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn, FaYoutube } from "react-icons/fa";
-import { Send, Globe, Shield, Heart } from "lucide-react";
+import { Send, Globe, Shield, Heart, Mail, Phone, MapPin } from "lucide-react";
 
-const SocialLink = ({ href, icon: Icon }: { href: string; icon: any }) => (
+// --- Sub-Components ---
+
+const SocialLink = ({ href, icon: Icon, label }: { href: string; icon: any; label: string }) => (
   <a
     href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label={label}
     className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-primary-600 hover:border-primary-500 hover:scale-110 transition-all duration-300 shadow-lg shadow-black/20"
   >
     <Icon size={18} />
@@ -31,91 +36,105 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full bg-slate-950 border-t border-white/5 pt-16 pb-8 overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary-900/10 blur-[100px] rounded-full -z-10" />
+    <footer className="relative w-full bg-slate-950 border-t border-white/5 pt-20 pb-10 overflow-hidden">
+      {/* Background Ambience Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary-900/10 blur-[120px] rounded-full -z-10" />
 
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-          {/* 1. Brand Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+          
+          {/* 1. Brand & Socials */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
-                Travel Buddy
+              <div className="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center text-xl">🌍</div>
+              <span className="text-2xl font-black text-white tracking-tight">
+                TravelBuddy
               </span>
             </Link>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-              Connect with travelers worldwide. Share itineraries, find verified companions, and turn solo trips into shared adventures.
+            <p className="text-sm text-slate-400 leading-relaxed">
+              The world's most trusted community for finding verified travel companions. Don't just travel, travel together.
             </p>
-            <div className="flex gap-4">
-              <SocialLink href="#" icon={FaInstagram} />
-              <SocialLink href="#" icon={FaTwitter} />
-              <SocialLink href="#" icon={FaLinkedinIn} />
-              <SocialLink href="#" icon={FaFacebookF} />
+            <div className="flex gap-3">
+              <SocialLink href="https://instagram.com" icon={FaInstagram} label="Instagram" />
+              <SocialLink href="https://twitter.com" icon={FaTwitter} label="Twitter" />
+              <SocialLink href="https://linkedin.com" icon={FaLinkedinIn} label="LinkedIn" />
+              <SocialLink href="https://facebook.com" icon={FaFacebookF} label="Facebook" />
             </div>
           </div>
 
-          {/* 2. Quick Links */}
-          <div>
-            <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wider mb-6">Explore</h3>
+          {/* 2. Important Links (Functional) */}
+          <div className="lg:pl-8">
+            <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] mb-7">Platform</h3>
             <ul className="space-y-4">
-              <FooterLink href="/explore" label="Find Travelers" />
-              <FooterLink href="/travel-plans" label="Browse Trips" />
-              <FooterLink href="/map" label="Interactive Map" />
-              <FooterLink href="/stories" label="Community Stories" />
+              <FooterLink href="/explore" label="Find Travel Buddies" />
+              <FooterLink href="/travel-plans" label="Explore Trip Plans" />
+              <FooterLink href="/about" label="Our Story" />
+              <FooterLink href="/blog" label="Travel Guides & Stories" />
             </ul>
           </div>
 
-          {/* 3. Company & Support */}
+          {/* 3. Contact Information (Mandatory Requirement) */}
           <div>
-            <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wider mb-6">Support</h3>
+            <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] mb-7">Contact Us</h3>
             <ul className="space-y-4">
-              <FooterLink href="/how-it-works" label="How it Works" />
-              <FooterLink href="/pricing" label="Pricing & Plans" />
-              <FooterLink href="/safety" label="Safety & Verification" />
-              <FooterLink href="/help" label="Help Center" />
+              <li className="flex items-start gap-3 text-sm text-slate-400 group cursor-default">
+                <MapPin className="w-5 h-5 text-primary-500 shrink-0" />
+                <span>123 Adventure Way, <br />Global Nomad Valley, CA 90210</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm text-slate-400 hover:text-primary-400 transition-colors">
+                <Mail className="w-5 h-5 text-primary-500 shrink-0" />
+                <a href="mailto:support@travelbuddy.com">support@travelbuddy.com</a>
+              </li>
+              <li className="flex items-center gap-3 text-sm text-slate-400 hover:text-primary-400 transition-colors">
+                <Phone className="w-5 h-5 text-primary-500 shrink-0" />
+                <a href="tel:+1234567890">+1 (234) 567-890</a>
+              </li>
             </ul>
           </div>
 
-          {/* 4. Newsletter */}
-          <div>
-            <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wider mb-6">Stay Updated</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Get the latest travel tips, destination guides, and community updates.
+          {/* 4. Newsletter Section */}
+          <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
+            <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] mb-4">Newsletter</h3>
+            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+              Subscribe to get exclusive travel deals and buddy alerts.
             </p>
-            <div className="relative">
+            <form className="relative" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"
-                placeholder="Enter your email"
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
+                required
+                placeholder="email@example.com"
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-12 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
               />
-              <button className="absolute right-1.5 top-1.5 p-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors shadow-lg shadow-primary-500/20">
+              <button 
+                type="submit"
+                className="absolute right-1.5 top-1.5 p-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-all active:scale-90"
+              >
                 <Send size={16} />
               </button>
+            </form>
+            <div className="mt-4 flex items-center gap-2">
+              <Shield className="w-3 h-3 text-emerald-500" />
+              <span className="text-[10px] text-slate-500">Your data is secured with SSL.</span>
             </div>
-            <p className="mt-3 text-[10px] text-slate-500">
-              By subscribing, you agree to our Policy. No spam, ever.
-            </p>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-8" />
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {currentYear} Travel Buddy Inc. All rights reserved.</p>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-[11px] text-slate-500 tracking-wide uppercase font-medium">
+          <p>© {currentYear} Travel Buddy Inc. Proudly Made for Global Citizens.</p>
           
           <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
-            <Link href="/cookies" className="hover:text-slate-300 transition-colors">Cookie Settings</Link>
+            <Link href="/privacy" className="hover:text-primary-400 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-primary-400 transition-colors">Terms</Link>
+            <Link href="/cookies" className="hover:text-primary-400 transition-colors">Security</Link>
           </div>
 
-          <div className="flex items-center gap-2 opacity-60">
-             <span>Made with</span>
-             <Heart size={12} className="text-rose-500 fill-rose-500 animate-pulse" />
-             <span>for travelers.</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+             <span className="text-slate-400">All Systems Operational</span>
           </div>
         </div>
       </div>
