@@ -161,6 +161,7 @@ export default function Navbar() {
                       <div className="p-1">
                         <Link href="/dashboard" className="flex items-center px-3 py-2 text-sm text-slate-300 hover:bg-white/5 rounded-lg">Dashboard</Link>
                         <Link href="/profile" className="flex items-center px-3 py-2 text-sm text-slate-300 hover:bg-white/5 rounded-lg">My Profile</Link>
+                        <Link href="/settings" className="flex items-center px-3 py-2 text-sm text-slate-300 hover:bg-white/5 rounded-lg">Account Settings</Link>
                         <button onClick={() => { logout(); setMenuOpen(false); }} className="w-full flex items-center px-3 py-2 text-sm text-rose-400 hover:bg-rose-500/10 rounded-lg">
                           Logout
                         </button>

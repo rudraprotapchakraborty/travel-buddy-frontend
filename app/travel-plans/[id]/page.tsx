@@ -244,6 +244,8 @@ export default function TravelPlanDetailsPage() {
   const canLeaveReview = () => {
     if (!user || !plan) return false;
     if (user.id === plan.user._id) return false;
+    // Evaluated on demand (when rendering the review form), not memoised
+    // eslint-disable-next-line react-hooks/purity
     const ended = new Date(plan.endDate).getTime() < Date.now() || String(plan.status).toLowerCase() === "completed";
     return ended && myRequest?.status === "ACCEPTED";
   };

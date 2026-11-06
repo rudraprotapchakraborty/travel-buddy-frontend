@@ -2,21 +2,24 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
-  ReactNode
+  ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+import api from "@/lib/api";
 
 export interface User {
   id: string;
   email: string;
   fullName: string;
   role: "USER" | "ADMIN";
+  profileImageUrl?: string;
+  isVerified?: boolean;
+  emailVerified?: boolean;
 }
 
 interface AuthContextValue {
@@ -24,10 +27,27 @@ interface AuthContextValue {
   token: string | null;
   loading: boolean;
   login: (token: string, user: User) => void;
+  updateUser: (patch: Partial<User>) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+const read = (key: string) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const write = (key: string, value: string | null) => {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    /* storage unavailable */
+  }
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -35,70 +55,86 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Load from localStorage
+  // Restore the session. localStorage only exists in the browser, so this has
+  // to run after mount to keep server and client markup identical.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const storedToken = localStorage.getItem("tb_token");
-    const storedUser = localStorage.getItem("tb_user");
+    const storedToken = read("tb_token");
+    const storedUser = read("tb_user");
     if (storedToken && storedUser) {
-      setToken(storedToken);
       try {
         setUser(JSON.parse(storedUser));
+        setToken(storedToken);
       } catch {
-        console.warn("Failed to parse stored user");
+        write("tb_token", null);
+        write("tb_user", null);
       }
     }
     setLoading(false);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Refresh /users/me/self when token changes
+  const logout = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    write("tb_token", null);
+    write("tb_user", null);
+    router.push("/login");
+  }, [router]);
+
+  // Keep the profile fresh; an invalid or expired token signs the user out
   useEffect(() => {
-    const refreshMe = async () => {
-      if (!token) return;
-      try {
-        const res = await axios.get(`${API_BASE}/users/me/self`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+    if (!token) return;
+    let cancelled = false;
+    api
+      .get("/users/me/self", { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        if (cancelled) return;
         const u = res.data.data;
-        const userObj: User = {
+        const next: User = {
           id: u._id || u.id,
           email: u.email,
           fullName: u.fullName,
-          role: u.role
+          role: u.role,
+          profileImageUrl: u.profileImageUrl,
+          isVerified: u.isVerified,
+          emailVerified: u.emailVerified,
         };
-        setUser(userObj);
-        localStorage.setItem("tb_user", JSON.stringify(userObj));
-      } catch (err) {
-        console.error("refresh me failed", err);
-      }
+        setUser(next);
+        write("tb_user", JSON.stringify(next));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) logout();
+      });
+    return () => {
+      cancelled = true;
     };
-    refreshMe();
-  }, [token]);
+  }, [token, logout]);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = useCallback((newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("tb_token", newToken);
-      localStorage.setItem("tb_user", JSON.stringify(newUser));
-    }
-  };
+    write("tb_token", newToken);
+    write("tb_user", JSON.stringify(newUser));
+  }, []);
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("tb_token");
-      localStorage.removeItem("tb_user");
-    }
-    router.push("/login");
-  };
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      write("tb_user", JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, token, loading, login, updateUser, logout }),
+    [user, token, loading, login, updateUser, logout]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

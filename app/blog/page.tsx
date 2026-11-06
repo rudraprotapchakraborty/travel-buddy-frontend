@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, User, ArrowRight, Search, Tag, clock } from "lucide-react";
+import { Calendar, User, ArrowRight, Search, Tag, Clock } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 

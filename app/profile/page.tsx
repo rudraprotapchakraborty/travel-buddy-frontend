@@ -291,6 +291,11 @@ export default function ProfilePage() {
                {(!viewingOther || isAdmin) && (
                  <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-5 backdrop-blur-sm">
                     <SectionHeader icon={User} title="Account Details" />
+                    {!viewingOther && (
+                      <Link href="/settings" className="mb-4 inline-flex text-xs font-semibold text-primary-400 hover:text-primary-300 hover:underline">
+                        Manage name, photo, email &amp; password
+                      </Link>
+                    )}
                     <div className="space-y-4">
                        <div className="group">
                           <label className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Email</label>

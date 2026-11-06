@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { Elements, useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import { useAuth } from "@/components/AuthContext";
@@ -29,14 +29,8 @@ const stripePromise: Promise<Stripe | null> | null = PUBLISHABLE_KEY ? loadStrip
 // --- Components ---
 
 export default function PaymentPage() {
-  const [envMissing, setEnvMissing] = useState(false);
+  const envMissing = !PUBLISHABLE_KEY || !API_BASE_RAW;
   const { user } = useAuth();
-
-  useEffect(() => {
-    if (!PUBLISHABLE_KEY || !API_BASE_RAW) {
-      setEnvMissing(true);
-    }
-  }, []);
 
   if (!user) {
     return (

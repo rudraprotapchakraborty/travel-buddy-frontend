@@ -1,3 +1,56 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Brand colour: the sky scale. The v3 config only defined 400-600, but the
+   pages also use 100/300/900, so the full scale lives here now. */
+@theme {
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-primary-950: #082f49;
+
+  --animate-shine: shine 1s ease-out;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+
+  @keyframes shine {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Used by the existing pages as `animate-in fade-in slide-in-from-*`. */
+@utility animate-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background-color: #020617;
+    color: #e2e8f0;
+  }
+  /* Tailwind 4 buttons use the default cursor; keep the pointer on clickables. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
