@@ -70,6 +70,11 @@ export default function RegisterPage() {
               Log in here
             </Link>
           </p>
+          <p className="text-[11px] text-slate-500">
+            By signing up, you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-slate-300">Terms</Link> and{" "}
+            <Link href="/privacy" className="underline hover:text-slate-300">Privacy Policy</Link>.
+          </p>
         </div>
       }
     >
