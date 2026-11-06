@@ -39,7 +39,7 @@ export default function DemoAccounts({ onChoose }: { onChoose: (account: DemoAcc
   }, [attempt]);
 
   return (
-    <section aria-label="Test accounts" className="grid-panel rounded-[28px] border border-line p-7 sm:p-9">
+    <section aria-label="Test accounts" className="grid-panel rounded-[28px] border border-line p-5 sm:p-9">
       <span className="eyeline">Test accounts</span>
       <h2 className="display mt-4 text-3xl">
         Try a <span className="accent">test account</span>

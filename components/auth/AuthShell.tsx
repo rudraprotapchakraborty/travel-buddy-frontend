@@ -40,7 +40,8 @@ export function AuthShell({
           {footer && <div className="mt-8 text-center text-sm text-muted">{footer}</div>}
         </div>
 
-        <aside className="mx-auto hidden w-full max-w-[560px] lg:block">{aside ?? <TripArt />}</aside>
+        {/* A custom panel (the test accounts) shows on every screen size; the decorative art is desktop-only */}
+        <aside className={`mx-auto w-full ${aside ? "max-w-[420px] lg:max-w-[560px]" : "hidden max-w-[560px] lg:block"}`}>{aside ?? <TripArt />}</aside>
       </div>
     </div>
   );
