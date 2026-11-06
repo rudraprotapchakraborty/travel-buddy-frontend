@@ -3,25 +3,28 @@
 import { useEffect, useState } from "react";
 import Protected from "@/components/Protected";
 import { useAuth } from "@/components/AuthContext";
-import api from "@/lib/api";
+import api, { getErrorMessage } from "@/lib/api";
+import Avatar from "@/components/Avatar";
 import Link from "next/link";
-import { 
-  Plane, 
-  MapPin, 
-  Calendar, 
-  User, 
-  ArrowRight, 
-  Inbox, 
-  Send, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  AlertCircle
+import {
+  Plane,
+  MapPin,
+  Calendar,
+  ArrowRight,
+  Inbox,
+  Send,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Ban,
+  Loader2
 } from "lucide-react";
 
 // --- Types ---
 
-type JoinStatus = "PENDING" | "ACCEPTED" | "REJECTED" | string;
+type JoinStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED" | string;
+type NextStatus = "ACCEPTED" | "REJECTED" | "CANCELLED";
+type OnUpdate = (id: string, status: NextStatus) => void;
 
 interface TravelPlanLite {
   _id: string;
@@ -39,6 +42,7 @@ interface JoinRequest {
   requester?: {
     _id: string;
     fullName: string;
+    profileImageUrl?: string;
     currentLocation?: string;
   };
 }
@@ -48,7 +52,8 @@ interface JoinRequest {
 const getStatusConfig = (status: JoinStatus) => {
   const s = String(status).toLowerCase();
   if (s === "accepted") return { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", icon: CheckCircle2, label: "Accepted" };
-  if (s === "rejected") return { color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", icon: XCircle, label: "Rejected" };
+  if (s === "rejected") return { color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", icon: XCircle, label: "Declined" };
+  if (s === "cancelled") return { color: "text-slate-400", bg: "bg-slate-500/10", border: "border-slate-500/20", icon: Ban, label: "Cancelled" };
   return { color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", icon: Clock, label: "Pending" };
 };
 
@@ -61,7 +66,7 @@ const isPlanDeleted = (travelPlan?: TravelPlanLite | string) => {
 
 // --- Components ---
 
-const SentRequestCard = ({ request }: { request: JoinRequest }) => {
+const SentRequestCard = ({ request, onUpdate, busy }: { request: JoinRequest; onUpdate: OnUpdate; busy: boolean }) => {
   const deleted = isPlanDeleted(request.travelPlan);
   const tp = request.travelPlan as TravelPlanLite;
   const status = getStatusConfig(request.status);
@@ -111,7 +116,18 @@ const SentRequestCard = ({ request }: { request: JoinRequest }) => {
 
       <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-xs">
          <span className="text-slate-500">Sent {new Date(request.createdAt).toLocaleDateString()}</span>
-         {!deleted && (
+         {request.status === "PENDING" && (
+            <button
+               type="button"
+               disabled={busy}
+               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(request._id, "CANCELLED"); }}
+               className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-semibold text-rose-400 ring-1 ring-inset ring-rose-500/30 transition hover:bg-rose-500/10 disabled:opacity-60"
+            >
+               {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Ban className="h-3 w-3" />}
+               Cancel request
+            </button>
+         )}
+         {!deleted && request.status !== "PENDING" && (
             <span className="flex items-center gap-1 font-semibold text-primary-400 group-hover:text-primary-300 transition-colors">
                View Trip <ArrowRight className="w-3 h-3" />
             </span>
@@ -124,20 +140,25 @@ const SentRequestCard = ({ request }: { request: JoinRequest }) => {
   return <Link href={`/travel-plans/${tp._id}`} className="group block h-full">{content}</Link>;
 };
 
-const HostRequestCard = ({ request }: { request: JoinRequest }) => {
+const HostRequestCard = ({ request, onUpdate, busy }: { request: JoinRequest; onUpdate: OnUpdate; busy: boolean }) => {
   const deleted = isPlanDeleted(request.travelPlan);
   const tp = request.travelPlan as TravelPlanLite;
   const status = getStatusConfig(request.status);
-  
+  const s = request.status;
+
   return (
     <div className="relative p-5 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-white/10 transition-all">
        <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-             <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 border border-slate-700">
-                {request.requester?.fullName?.[0] || "?"}
-             </div>
+             <Avatar name={request.requester?.fullName} url={request.requester?.profileImageUrl} size={40} />
              <div>
-                <h3 className="font-bold text-slate-100">{request.requester?.fullName || "Unknown User"}</h3>
+                <h3 className="font-bold text-slate-100">
+                   {request.requester?._id ? (
+                      <Link href={`/profile?user=${request.requester._id}`} className="hover:text-primary-400 hover:underline underline-offset-4">
+                         {request.requester.fullName}
+                      </Link>
+                   ) : "Unknown User"}
+                </h3>
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                    <MapPin className="w-3 h-3" />
                    {request.requester?.currentLocation || "Location unknown"}
@@ -168,6 +189,34 @@ const HostRequestCard = ({ request }: { request: JoinRequest }) => {
              {new Date(request.createdAt).toLocaleDateString()}
           </span>
        </div>
+
+       {/* The host decides: accept or decline, and can change their mind later */}
+       {s !== "CANCELLED" && (
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-white/5 pt-4">
+             {s !== "ACCEPTED" && (
+                <button
+                   type="button"
+                   disabled={busy || deleted}
+                   onClick={() => onUpdate(request._id, "ACCEPTED")}
+                   className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-xs font-bold text-on-brand transition hover:bg-emerald-500 disabled:opacity-60"
+                >
+                   {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                   {s === "REJECTED" ? "Accept instead" : "Accept"}
+                </button>
+             )}
+             {s !== "REJECTED" && (
+                <button
+                   type="button"
+                   disabled={busy}
+                   onClick={() => onUpdate(request._id, "REJECTED")}
+                   className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-bold text-rose-400 ring-1 ring-inset ring-rose-500/30 transition hover:bg-rose-500/10 disabled:opacity-60"
+                >
+                   <XCircle className="h-3.5 w-3.5" />
+                   {s === "ACCEPTED" ? "Remove from trip" : "Decline"}
+                </button>
+             )}
+          </div>
+       )}
     </div>
   );
 };
@@ -180,6 +229,24 @@ export default function JoinRequestsPage() {
   const [hostRequests, setHostRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"SENT" | "HOST">("SENT");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Accept / decline (host) or cancel (requester), then reflect it in the list
+  const updateStatus: OnUpdate = async (id, status) => {
+    setBusyId(id);
+    setActionError(null);
+    try {
+      await api.patch(`/join-requests/${id}`, { status });
+      const apply = (list: JoinRequest[]) => list.map((r) => (r._id === id ? { ...r, status } : r));
+      setSent(apply);
+      setHostRequests(apply);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Could not update the request. Please try again."));
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -246,6 +313,12 @@ export default function JoinRequestsPage() {
              </div>
           </div>
 
+          {actionError && (
+             <div role="alert" className="rounded-xl border border-rose-500/25 bg-rose-500/10 p-3.5 text-sm text-rose-300">
+                {actionError}
+             </div>
+          )}
+
           {/* --- Content Grid --- */}
           <div className="min-h-[400px]">
              {loading ? (
@@ -269,7 +342,7 @@ export default function JoinRequestsPage() {
                          </div>
                       ) : (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {sent.map(r => <SentRequestCard key={r._id} request={r} />)}
+                            {sent.map(r => <SentRequestCard key={r._id} request={r} onUpdate={updateStatus} busy={busyId === r._id} />)}
                          </div>
                       )
                    )}
@@ -286,7 +359,7 @@ export default function JoinRequestsPage() {
                          </div>
                       ) : (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {hostRequests.map(r => <HostRequestCard key={r._id} request={r} />)}
+                            {hostRequests.map(r => <HostRequestCard key={r._id} request={r} onUpdate={updateStatus} busy={busyId === r._id} />)}
                          </div>
                       )
                    )}

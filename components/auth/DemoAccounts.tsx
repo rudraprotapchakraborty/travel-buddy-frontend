@@ -11,11 +11,10 @@ export interface DemoAccount {
   password: string;
 }
 
-const icons = { Admin: ShieldCheck, Traveler: Compass, Host: Users } as const;
+const icons = { Admin: ShieldCheck, User: Users } as const;
 const blurbs: Record<string, string> = {
-  Admin: "Manage members and trips",
-  Traveler: "Browse trips and send requests",
-  Host: "Owns trips and reviews requests",
+  Admin: "Manage members, trips and reviews",
+  User: "Post trips, send requests and accept buddies",
 };
 
 /** "Try a test account": lists the demo logins and fills the sign-in form with the chosen one. */
