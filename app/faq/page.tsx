@@ -198,7 +198,7 @@ export default function FAQPage() {
               <MessageCircle className="w-10 h-10 text-white mb-6 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-bold text-white mb-2">Live Chat Support</h3>
               <p className="text-primary-100 text-sm mb-6">Talk to our friendly support team right now for instant help.</p>
-              <button className="px-6 py-3 bg-white text-primary-600 rounded-xl font-bold text-sm flex items-center gap-2">
+              <button className="px-6 py-3 bg-[#fff] text-[#0a678f] rounded-xl font-bold text-sm flex items-center gap-2">
                  Start Chat <ArrowRight size={16} />
               </button>
            </div>

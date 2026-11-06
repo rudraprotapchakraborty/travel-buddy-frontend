@@ -211,7 +211,7 @@ export default function HomePage() {
       {/* ---------- Call to action ---------- */}
       <section className="frame py-20">
         <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0b5f84] to-[#0b7aa6] px-6 py-16 text-center text-on-brand sm:px-12">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#fff]/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-[#f2a65a]/25 blur-3xl" />
           <Compass className="relative mx-auto h-10 w-10 opacity-90" />
           <h2 className="display relative mx-auto mt-6 max-w-2xl text-[clamp(32px,4.4vw,56px)]">
@@ -223,12 +223,12 @@ export default function HomePage() {
           <div className="relative mt-9 flex flex-wrap justify-center gap-3">
             <Link
               href={user ? "/travel-plans/add" : "/register"}
-              className="btn bg-white !text-[#0b5f84] hover:bg-[#f1f9fd]"
+              className="btn bg-[#fff] !text-[#0b5f84] hover:bg-[#f1f9fd]"
             >
               {user ? "Plan a trip" : "Create free account"}
               <UserPlus className="h-[18px] w-[18px]" />
             </Link>
-            <Link href="/explore" className="btn text-on-brand ring-1 ring-inset ring-white/40 hover:bg-white/10">
+            <Link href="/explore" className="btn text-on-brand ring-1 ring-inset ring-[#fff]/40 hover:bg-[#fff]/10">
               Browse trips
             </Link>
           </div>

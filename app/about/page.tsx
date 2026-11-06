@@ -171,7 +171,7 @@ export default function AboutPage() {
            <div className="relative z-10">
              <h2 className="text-4xl font-black text-white mb-6">Ready to write your next chapter?</h2>
              <div className="flex flex-wrap justify-center gap-4">
-               <Link href="/register" className="px-8 py-4 bg-white text-primary-600 rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2">
+               <Link href="/register" className="px-8 py-4 bg-[#fff] text-[#0a678f] rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2">
                  Join the Community <ArrowRight size={18} />
                </Link>
                <Link href="/contact" className="px-8 py-4 bg-black/20 text-white border border-white/20 rounded-full font-bold hover:bg-black/30 transition-all">

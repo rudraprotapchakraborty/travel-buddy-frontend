@@ -31,7 +31,7 @@ export default function TripArt({ className = "" }: { className?: string }) {
 
       {/* front card */}
       <div
-        className="absolute left-[6%] top-[30%] w-[66%] animate-float rounded-[4cqw] bg-gradient-to-br from-[#0b5f84] to-[#0b7aa6] p-[4.5cqw] text-white shadow-[0_5cqw_6cqw_-3cqw_rgba(6,60,87,0.7)]"
+        className="absolute left-[6%] top-[30%] w-[66%] animate-float rounded-[4cqw] bg-gradient-to-br from-[#0b5f84] to-[#0b7aa6] p-[4.5cqw] text-on-brand shadow-[0_5cqw_6cqw_-3cqw_rgba(6,60,87,0.7)]"
         style={{ ["--r" as string]: "-6deg", transform: "rotate(-6deg)" }}
       >
         <div className="flex items-center justify-between" style={{ fontSize: "3.4cqw" }}>
