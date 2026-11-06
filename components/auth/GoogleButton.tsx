@@ -43,11 +43,11 @@ export function GoogleButton({ onCredential }: { onCredential: (idToken: string)
         callback: (r) => callback.current(r.credential),
       });
       window.google.accounts.id.renderButton(holder.current, {
-        theme: "filled_black",
+        theme: "outline",
         size: "large",
         shape: "pill",
         text: "continue_with",
-        width: 340,
+        width: 380,
       });
       setReady(true);
     };
@@ -72,10 +72,10 @@ export function GoogleButton({ onCredential }: { onCredential: (idToken: string)
   return (
     <div className="space-y-4">
       <div ref={holder} className="flex min-h-[44px] justify-center" aria-busy={!ready} />
-      <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-slate-500">
-        <span className="h-px flex-1 bg-white/10" />
+      <div className="flex items-center gap-3 text-xs text-muted">
+        <span className="h-px flex-1 bg-line" />
         or
-        <span className="h-px flex-1 bg-white/10" />
+        <span className="h-px flex-1 bg-line" />
       </div>
     </div>
   );

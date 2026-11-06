@@ -69,7 +69,7 @@ export default function PaymentPage() {
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary-900/10 rounded-full blur-[120px]" />
          <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[120px]" />
-         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+         <div className="absolute inset-0 opacity-20 mix-blend-overlay"></div>
       </div>
 
       <div className="w-full max-w-5xl relative z-10 grid lg:grid-cols-5 gap-8 items-start">
@@ -284,7 +284,7 @@ function CheckoutForm({ apiBase }: { apiBase: string }) {
              onClick={() => setPlan("YEARLY")}
              className={`cursor-pointer relative p-4 rounded-xl border transition-all duration-300 ${plan === "YEARLY" ? "bg-primary-600/10 border-primary-500 ring-1 ring-primary-500/50" : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10"}`}
            >
-              <div className="absolute -top-3 left-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-emerald-500/20">
+              <div className="absolute -top-3 left-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-on-brand text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-emerald-500/20">
                  BEST VALUE
               </div>
               <div className="flex justify-between items-start mb-2 mt-1">
@@ -330,7 +330,7 @@ function CheckoutForm({ apiBase }: { apiBase: string }) {
         <button
            type="submit"
            disabled={loading || !stripe}
-           className="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 p-4 font-bold text-white shadow-lg shadow-primary-500/20 transition-all hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+           className="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 p-4 font-bold text-on-brand shadow-lg shadow-primary-500/20 transition-all hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
         >
            <div className="relative z-10 flex items-center justify-center gap-2">
               {loading ? (

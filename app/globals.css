@@ -1,22 +1,131 @@
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
 @import "tailwindcss";
 
-/* Brand colour: the sky scale. The v3 config only defined 400-600, but the
-   pages also use 100/300/900, so the full scale lives here now. */
+/* Class based theme: <html class="dark"> switches everything. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -------------------------------------------------------------------------
+   Design tokens
+   Light is a warm paper with deep ocean ink; dark is a deep night blue.
+   Existing pages were written with slate/white utilities for a dark UI, so
+   those palettes are aliased to the tokens below. That makes every page
+   follow the theme without rewriting its markup.
+   ------------------------------------------------------------------------- */
+:root {
+  --paper: #fbfaf6;
+  --surface: #ffffff;
+  --ink: #10222d;
+  --muted: #52626b;
+  --line: #dde3dd;
+  --brand: #0b6e99;
+  --brand-strong: #085a7e;
+  --brand-soft: #e3f2f9;
+  --sunset: #f2a65a;
+
+  /* "white" text/overlays: ink in light mode, real white in dark mode */
+  --tb-white: #10222d;
+
+  --tb-50: #10222d;
+  --tb-100: #10222d;
+  --tb-200: #17303d;
+  --tb-300: #2b4350;
+  --tb-400: #4a5f6b;
+  --tb-500: #5f717c;
+  --tb-600: #8d9ba4;
+  --tb-700: #dfe5df;
+  --tb-800: #eaeee9;
+  --tb-900: #ffffff;
+  --tb-950: #fbfaf6;
+
+  --tb-p100: #d3eef9;
+  --tb-p300: #075985;
+  --tb-p400: #0b6e99;
+  --tb-p500: #0c7cab;
+  --tb-p600: #0a678f;
+
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #0d161c;
+  --surface: #14212a;
+  --ink: #eef4f6;
+  --muted: #a1b2ba;
+  --line: #25353e;
+  --brand: #5cc4ee;
+  --brand-strong: #8fd7f4;
+  --brand-soft: #123344;
+
+  --tb-white: #ffffff;
+
+  --tb-50: #f2f6f7;
+  --tb-100: #e6edf0;
+  --tb-200: #cdd9de;
+  --tb-300: #aebdc4;
+  --tb-400: #8497a1;
+  --tb-500: #62767f;
+  --tb-600: #44565f;
+  --tb-700: #2d3d46;
+  --tb-800: #1f2d35;
+  --tb-900: #14212a;
+  --tb-950: #0d161c;
+
+  --tb-p100: #d3eef9;
+  --tb-p300: #7dd3fc;
+  --tb-p400: #38bdf8;
+  --tb-p500: #0a86b8;
+  --tb-p600: #0a6f99;
+
+  color-scheme: dark;
+}
+
 @theme {
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
+  --font-sans: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+
+  /* semantic */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-sunset: var(--sunset);
+  --color-on-brand: #ffffff;
+
+  /* legacy aliases (see note above) */
+  --color-white: var(--tb-white);
+  --color-slate-50: var(--tb-50);
+  --color-slate-100: var(--tb-100);
+  --color-slate-200: var(--tb-200);
+  --color-slate-300: var(--tb-300);
+  --color-slate-400: var(--tb-400);
+  --color-slate-500: var(--tb-500);
+  --color-slate-600: var(--tb-600);
+  --color-slate-700: var(--tb-700);
+  --color-slate-800: var(--tb-800);
+  --color-slate-900: var(--tb-900);
+  --color-slate-950: var(--tb-950);
+
+  --color-primary-50: #eef8fc;
+  --color-primary-100: var(--tb-p100);
+  --color-primary-200: #b3e0f2;
+  --color-primary-300: var(--tb-p300);
+  --color-primary-400: var(--tb-p400);
+  --color-primary-500: var(--tb-p500);
+  --color-primary-600: var(--tb-p600);
+  --color-primary-700: #085a7e;
+  --color-primary-800: #074a69;
   --color-primary-900: #0c4a6e;
   --color-primary-950: #082f49;
 
   --animate-shine: shine 1s ease-out;
   --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-float: float 7s ease-in-out infinite;
 
   @keyframes shine {
     100% {
@@ -26,31 +135,250 @@
   @keyframes fade-in {
     from {
       opacity: 0;
-      transform: translateY(-0.5rem);
+      transform: translateY(0.5rem);
     }
     to {
       opacity: 1;
       transform: none;
     }
   }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--r, 0deg));
+    }
+    50% {
+      transform: translateY(-10px) rotate(var(--r, 0deg));
+    }
+  }
 }
 
-/* Used by the existing pages as `animate-in fade-in slide-in-from-*`. */
+/* Status colours: pastel shades were tuned for dark backgrounds, so in light
+   mode the text shades get darker for contrast. */
+:root:not(.dark) {
+  --color-rose-200: #9f1239;
+  --color-rose-300: #be123c;
+  --color-rose-400: #be123c;
+  --color-rose-500: #e11d48;
+  --color-red-200: #991b1b;
+  --color-emerald-200: #065f46;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #047857;
+  --color-emerald-500: #059669;
+  --color-amber-400: #b45309;
+  --color-amber-500: #c2610c;
+  --color-yellow-400: #a16207;
+  --color-yellow-500: #b45309;
+  --color-sky-300: #0369a1;
+  --color-sky-400: #0369a1;
+  --color-sky-500: #0284c7;
+  --color-indigo-300: #4338ca;
+  --color-indigo-400: #4f46e5;
+  --color-blue-400: #1d4ed8;
+  --color-purple-400: #7e22ce;
+  --color-purple-500: #9333ea;
+}
+
+/* Used by existing pages as `animate-in fade-in slide-in-from-*`. */
 @utility animate-in {
   animation: fade-in 0.3s ease-out both;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    scroll-behavior: smooth;
   }
   body {
-    background-color: #020617;
-    color: #e2e8f0;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  /* Tailwind 4 buttons use the default cursor; keep the pointer on clickables. */
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [role="button"]:not(:disabled),
+  summary {
     cursor: pointer;
+  }
+  :focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--brand) 70%, transparent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--brand) 28%, transparent);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--tb-600);
+  }
+  /* native date pickers follow the theme */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.6;
+  }
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Reusable pieces (new pages)
+   ------------------------------------------------------------------------- */
+@layer components {
+  .frame {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: clamp(18px, 5vw, 72px);
+  }
+
+  .eyeline {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .eyeline::before {
+    content: "";
+    width: 26px;
+    height: 2px;
+    background: var(--brand);
+  }
+
+  /* serif italic accent word, as used in headlines */
+  .accent {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--brand);
+  }
+
+  .display {
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    line-height: 1.02;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 999px;
+    padding: 13px 22px;
+    font-size: 15px;
+    font-weight: 650;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      transform 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease,
+      color 0.18s ease;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-brand {
+    background: var(--brand);
+    color: var(--paper);
+    box-shadow: 0 10px 24px -10px color-mix(in oklab, var(--brand) 70%, transparent);
+  }
+  .btn-ghost {
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .btn-sm {
+    padding: 10px 16px;
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+  }
+  .card-hover {
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+    border-color: var(--brand);
+    box-shadow: 0 18px 40px -24px color-mix(in oklab, var(--brand) 55%, transparent);
+  }
+
+  /* dotted-grid panel used behind illustrations */
+  .grid-panel {
+    background-color: var(--brand-soft);
+    background-image:
+      linear-gradient(color-mix(in oklab, var(--brand) 9%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, var(--brand) 9%, transparent) 1px, transparent 1px),
+      radial-gradient(ellipse at 80% 78%, color-mix(in oklab, var(--brand) 16%, transparent), transparent 70%);
+    background-size: 28px 28px, 28px 28px, auto;
+  }
+
+  .tile-mint {
+    background: #d8efe3;
+    color: #1f4a37;
+  }
+  .tile-sky {
+    background: #d9ecf7;
+    color: #134a66;
+  }
+  .tile-peach {
+    background: #f9e0cc;
+    color: #6b3a14;
+  }
+  .tile-lilac {
+    background: #e6e0f7;
+    color: #3d2f78;
+  }
+  .dark .tile-mint {
+    background: #173a2d;
+    color: #a6e3c5;
+  }
+  .dark .tile-sky {
+    background: #12364a;
+    color: #a3d9f1;
+  }
+  .dark .tile-peach {
+    background: #43301e;
+    color: #f4c9a2;
+  }
+  .dark .tile-lilac {
+    background: #2d2a4d;
+    color: #cbc1f5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

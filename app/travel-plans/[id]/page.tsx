@@ -438,7 +438,7 @@ export default function TravelPlanDetailsPage() {
                             <button 
                                type="submit" 
                                disabled={joinSubmitting}
-                               className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-primary-500/20 disabled:opacity-50"
+                               className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-on-brand text-sm font-bold rounded-xl transition-all shadow-lg shadow-primary-500/20 disabled:opacity-50"
                             >
                                {joinSubmitting ? "Sending..." : "Send Request"}
                             </button>
@@ -481,7 +481,7 @@ export default function TravelPlanDetailsPage() {
                          />
                          <div className="flex justify-end gap-2">
                             <button onClick={() => setShowReviewForm(false)} className="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
-                            <button onClick={() => handleSubmitReview()} className="px-4 py-1.5 bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold rounded-lg">Submit</button>
+                            <button onClick={() => handleSubmitReview()} className="px-4 py-1.5 bg-primary-600 hover:bg-primary-500 text-on-brand text-xs font-bold rounded-lg">Submit</button>
                          </div>
                       </div>
                    )}

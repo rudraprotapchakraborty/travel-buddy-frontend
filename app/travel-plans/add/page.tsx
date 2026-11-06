@@ -106,7 +106,7 @@ export default function AddTravelPlanPage() {
         <div className="absolute inset-0 pointer-events-none">
            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-900/10 blur-[120px] rounded-full" />
            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-primary-900/10 blur-[120px] rounded-full" />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+           <div className="absolute inset-0 opacity-20 mix-blend-overlay"></div>
         </div>
 
         <div className="w-full max-w-2xl relative z-10 space-y-8">
@@ -265,7 +265,7 @@ export default function AddTravelPlanPage() {
                <button
                   type="submit"
                   disabled={saving}
-                  className="group relative w-full sm:w-auto overflow-hidden rounded-xl bg-primary-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-500 hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+                  className="group relative w-full sm:w-auto overflow-hidden rounded-xl bg-primary-600 px-8 py-3 text-sm font-bold text-on-brand shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-500 hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
                >
                   <div className="relative z-10 flex items-center justify-center gap-2">
                      {saving ? (

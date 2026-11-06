@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Protected from "@/components/Protected";
+import Avatar from "@/components/Avatar";
 import { useAuth } from "@/components/AuthContext";
 import api from "@/lib/api";
 import { useSearchParams } from "next/navigation";
@@ -196,7 +197,6 @@ export default function ProfilePage() {
 
   const isAdmin = typeof profile?.role === "string" && profile.role.toLowerCase() === "admin";
   const isVerifiedSubscriber = profile?.subscriptionStatus === "ACTIVE";
-  const initials = (profile.fullName || "U").substring(0, 2).toUpperCase();
 
   const travelPlanIdFromReview = (r: Review): string | null => {
     if (!r.travelPlan) return null;
@@ -211,7 +211,7 @@ export default function ProfilePage() {
         {/* --- Hero Banner --- */}
         <div className="relative h-48 md:h-64 w-full bg-slate-900 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-900 opacity-80" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+          <div className="absolute inset-0 opacity-20 mix-blend-overlay" />
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl" />
         </div>
 
@@ -222,14 +222,12 @@ export default function ProfilePage() {
             
             {/* Avatar */}
             <div className="relative group">
-               <div className="h-32 w-32 md:h-40 md:w-40 rounded-full border-4 border-slate-950 bg-gradient-to-br from-slate-700 to-slate-900 shadow-2xl flex items-center justify-center text-4xl md:text-5xl font-bold text-white relative overflow-hidden">
-                  {initials}
-                  {/* Subtle shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+               <div className="rounded-full border-4 border-slate-950 shadow-2xl">
+                  <Avatar name={profile.fullName} url={profile.profileImageUrl} size={152} className="!text-5xl" />
                </div>
                {isVerifiedSubscriber && (
                  <div className="absolute bottom-2 right-2 bg-slate-950 rounded-full p-1" title="Verified Subscriber">
-                    <div className="bg-emerald-500 text-white p-1 rounded-full shadow-lg shadow-emerald-500/40">
+                    <div className="bg-emerald-500 text-on-brand p-1 rounded-full shadow-lg shadow-emerald-500/40">
                       <ShieldCheck className="w-5 h-5" />
                     </div>
                  </div>
@@ -424,7 +422,7 @@ export default function ProfilePage() {
                            <button 
                               onClick={handleSave}
                               disabled={saving}
-                              className="inline-flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-primary-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="inline-flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-500 text-on-brand text-sm font-semibold rounded-full shadow-lg shadow-primary-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                            >
                               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                               Save Changes
@@ -453,9 +451,11 @@ export default function ProfilePage() {
                               <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-colors">
                                  <div className="flex justify-between items-start mb-2">
                                     <div className="flex items-center gap-2">
-                                       <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
-                                          {(typeof r.reviewer === 'string' ? "T" : (r.reviewer as any).fullName?.[0]) || "U"}
-                                       </div>
+                                       <Avatar
+                                          name={typeof r.reviewer === "string" ? "Traveler" : (r.reviewer as any).fullName}
+                                          url={typeof r.reviewer === "string" ? undefined : (r.reviewer as any).profileImageUrl}
+                                          size={32}
+                                       />
                                        <div>
                                           <p className="text-sm font-medium text-slate-200">
                                              {typeof r.reviewer === "string" ? "Traveler" : (r.reviewer as any).fullName ?? "Traveler"}

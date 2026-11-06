@@ -9,6 +9,8 @@ import { useAuth } from "@/components/AuthContext";
 import { AuthShell, FormMessage, SubmitButton } from "@/components/auth/AuthShell";
 import { Field } from "@/components/auth/Field";
 import { GoogleButton } from "@/components/auth/GoogleButton";
+import GuestOnly from "@/components/GuestOnly";
+import DemoAccounts from "@/components/auth/DemoAccounts";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -21,10 +23,8 @@ function LoginForm() {
 
   const notice = search.get("reset") ? "Password updated. You can sign in now." : null;
 
-  const finish = (accessToken: string, user: any) => {
-    login(accessToken, user);
-    router.push(user.role === "ADMIN" ? "/admin" : "/dashboard");
-  };
+  // GuestOnly sends the user on (to ?from= or their dashboard) once logged in
+  const finish = (accessToken: string, user: any) => login(accessToken, user);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,10 +60,19 @@ function LoginForm() {
     <AuthShell
       title="Welcome back"
       subtitle="Sign in to continue your journey."
+      aside={
+        <DemoAccounts
+          onChoose={(a) => {
+            setEmail(a.email);
+            setPassword(a.password);
+            setError(null);
+          }}
+        />
+      }
       footer={
         <>
           Don&apos;t have an account yet?{" "}
-          <Link href="/register" className="font-semibold text-primary-400 hover:text-primary-300 hover:underline">
+          <Link href="/register" className="font-semibold text-brand underline underline-offset-4">
             Create an account
           </Link>
         </>
@@ -98,7 +107,7 @@ function LoginForm() {
             labelAside={
               <Link
                 href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
-                className="text-xs text-primary-400 hover:text-primary-300 hover:underline"
+                className="text-sm font-semibold text-brand hover:underline hover:underline-offset-4"
               >
                 Forgot password?
               </Link>
@@ -118,7 +127,9 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
-      <LoginForm />
+      <GuestOnly>
+        <LoginForm />
+      </GuestOnly>
     </Suspense>
   );
 }

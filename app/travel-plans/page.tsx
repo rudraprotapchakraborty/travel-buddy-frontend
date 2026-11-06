@@ -59,7 +59,7 @@ const TripCard = ({ plan }: { plan: TravelPlan }) => {
       {/* Top Row: Destination & Menu */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-on-brand shadow-lg shadow-indigo-500/20">
             <Plane className="w-5 h-5" />
           </div>
           <div>
@@ -148,7 +148,7 @@ export default function TravelPlansPage() {
         {/* Ambient Background */}
         <div className="absolute inset-0 pointer-events-none">
            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-900/10 blur-[100px] rounded-full" />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+           <div className="absolute inset-0 opacity-20 mix-blend-overlay"></div>
         </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-10 space-y-8">
@@ -174,7 +174,7 @@ export default function TravelPlansPage() {
                </Link>
                <Link 
                   href="/travel-plans/add"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-on-brand text-sm font-bold shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5"
                >
                   <Plus className="w-4 h-4" />
                   <span>New Trip</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
@@ -9,8 +10,9 @@ import { useAuth } from "@/components/AuthContext";
 import { AuthShell, FormMessage, SubmitButton } from "@/components/auth/AuthShell";
 import { Field } from "@/components/auth/Field";
 import { GoogleButton } from "@/components/auth/GoogleButton";
+import GuestOnly from "@/components/GuestOnly";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +53,6 @@ export default function RegisterPage() {
     try {
       const res = await api.post("/auth/google", { idToken });
       login(res.data.data.accessToken, res.data.data.user);
-      router.push("/dashboard");
     } catch (err) {
       setError(getErrorMessage(err, "Google sign-in failed."));
       setLoading(false);
@@ -134,5 +135,15 @@ export default function RegisterPage() {
         </form>
       </div>
     </AuthShell>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <GuestOnly>
+        <RegisterForm />
+      </GuestOnly>
+    </Suspense>
   );
 }

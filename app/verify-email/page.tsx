@@ -8,6 +8,7 @@ import api, { getErrorMessage } from "@/lib/api";
 import { useAuth } from "@/components/AuthContext";
 import { AuthShell, FormMessage, SubmitButton } from "@/components/auth/AuthShell";
 import { OtpInput } from "@/components/auth/OtpInput";
+import GuestOnly from "@/components/GuestOnly";
 
 const RESEND_SECONDS = 60;
 
@@ -39,8 +40,7 @@ function VerifyForm() {
     try {
       const res = await api.post("/auth/verify-email", { email, otp: value });
       const { accessToken, user } = res.data.data;
-      login(accessToken, user);
-      router.push(user.role === "ADMIN" ? "/admin" : "/dashboard");
+      login(accessToken, user); // GuestOnly redirects once the session exists
     } catch (err) {
       setError(getErrorMessage(err, "That code did not work."));
       setCode("");
@@ -110,7 +110,9 @@ function VerifyForm() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={null}>
-      <VerifyForm />
+      <GuestOnly>
+        <VerifyForm />
+      </GuestOnly>
     </Suspense>
   );
 }

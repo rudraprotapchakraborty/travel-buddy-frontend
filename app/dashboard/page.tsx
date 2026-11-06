@@ -52,7 +52,7 @@ const QuickActionCard = ({ href, icon: Icon, title, desc, primary = false }: any
     href={href}
     className={`group relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
       ${primary 
-        ? "bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-500/25" 
+        ? "bg-primary-600 border-primary-500 text-on-brand shadow-lg shadow-primary-500/25" 
         : "bg-slate-900/50 border-white/5 text-slate-200 hover:bg-slate-800/50 hover:border-white/10"
       }`}
   >
@@ -153,7 +153,7 @@ export default function DashboardPage() {
         <div className="absolute inset-0 pointer-events-none">
            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-900/10 blur-[100px] rounded-full" />
            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-900/10 blur-[100px] rounded-full" />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+           <div className="absolute inset-0 opacity-20 mix-blend-overlay"></div>
         </div>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-10 space-y-10">
@@ -179,7 +179,7 @@ export default function DashboardPage() {
             {/* Next Trip Highlight Widget */}
             {nextTrip && (
                <div className="bg-slate-900/80 border border-slate-700/50 p-4 rounded-2xl backdrop-blur-md flex items-center gap-4 shadow-xl min-w-[260px]">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-on-brand shadow-lg shadow-primary-500/20">
                      <Plane className="w-6 h-6" />
                   </div>
                   <div>

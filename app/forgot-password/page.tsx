@@ -8,12 +8,14 @@ import api, { getErrorMessage } from "@/lib/api";
 import { AuthShell, FormMessage, SubmitButton } from "@/components/auth/AuthShell";
 import { Field } from "@/components/auth/Field";
 import { OtpInput } from "@/components/auth/OtpInput";
+import { useAuth } from "@/components/AuthContext";
 
 const RESEND_SECONDS = 60;
 
 function ForgotForm() {
   const search = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [step, setStep] = useState<"email" | "reset">("email");
   const [email, setEmail] = useState(search.get("email") || "");
   const [code, setCode] = useState("");
@@ -60,7 +62,8 @@ function ForgotForm() {
         otp: code,
         newPassword: password,
       });
-      router.push("/login?reset=1");
+      // signed-in users came from Settings and stay signed in
+      router.push(user ? "/settings" : "/login?reset=1");
     } catch (err) {
       setError(getErrorMessage(err, "Could not reset your password."));
       setLoading(false);

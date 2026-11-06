@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import Protected from "@/components/Protected";
+import Avatar from "@/components/Avatar";
 import { useAuth } from "@/components/AuthContext";
 import api, { getErrorMessage } from "@/lib/api";
 import { Field } from "@/components/auth/Field";
@@ -55,21 +56,6 @@ function Section({ id, title, hint, children, danger }: { id: string; title: str
       </div>
       <div className="max-w-md lg:col-span-7 lg:col-start-6">{children}</div>
     </section>
-  );
-}
-
-function Avatar({ name, url, size = 64 }: { name: string; url?: string; size?: number }) {
-  const initials = (name || "U").trim().slice(0, 2).toUpperCase();
-  return url ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={url} alt="" width={size} height={size} className="rounded-full object-cover ring-2 ring-white/10" style={{ width: size, height: size }} />
-  ) : (
-    <div
-      className="flex items-center justify-center rounded-full bg-gradient-to-tr from-primary-600 to-indigo-500 font-bold text-white"
-      style={{ width: size, height: size, fontSize: size / 3 }}
-    >
-      {initials}
-    </div>
   );
 }
 
@@ -252,9 +238,16 @@ function SettingsContent() {
         </p>
       </header>
 
+      {user.isDemo && (
+        <div role="note" className="mb-2 rounded-2xl border border-brand/25 bg-brand-soft p-4 text-sm text-ink">
+          <b>You are using a test account.</b> Your name and photo can be changed, but the email, password and delete options are
+          locked. Create your own account to try them.
+        </div>
+      )}
+
       <Section id="settings-profile" title="Profile" hint="Your photo and name are shown to other travellers.">
         <div className="mb-6 flex flex-wrap items-center gap-4">
-          <Avatar name={user.fullName} url={user.profileImageUrl} />
+          <Avatar name={user.fullName} url={user.profileImageUrl} size={64} />
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-4">
               <label

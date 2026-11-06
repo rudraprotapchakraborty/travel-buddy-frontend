@@ -1,45 +1,46 @@
 "use client";
 
-import Link from "next/link";
 import { ReactNode } from "react";
-import { AlertCircle, CheckCircle2, Globe, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import Brand from "@/components/Brand";
+import ThemeToggle from "@/components/ThemeToggle";
+import TripArt from "@/components/TripArt";
 
-/** Page frame shared by login, register, verify and reset screens. */
+/** Two column auth layout: the form on the left, an illustration (or the test accounts) on the right. */
 export function AuthShell({
   title,
   subtitle,
   children,
   footer,
+  aside,
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
+  aside?: ReactNode;
 }) {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-4">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[70%] rounded-full bg-primary-900/10 blur-[120px]" />
-        <div className="absolute -right-[10%] top-[40%] h-[60%] w-[60%] rounded-full bg-indigo-900/10 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-paper text-ink">
+      <header className="frame flex min-h-[72px] items-center justify-between">
+        <Brand />
+        <ThemeToggle />
+      </header>
 
-      <div className="relative z-10 w-full max-w-[440px]">
-        <div className="mb-8 space-y-2 text-center">
-          <Link href="/" className="group inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-500 shadow-lg shadow-primary-500/20 transition-transform duration-300 group-hover:scale-110">
-              <Globe className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-white">Travel Buddy</span>
-          </Link>
-          <h1 className="mt-4 text-2xl font-semibold text-slate-100">{title}</h1>
-          {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
+      <div className="frame grid items-center gap-12 pb-16 pt-4 lg:min-h-[calc(100vh-150px)] lg:grid-cols-2 lg:gap-24">
+        <div className="mx-auto w-full max-w-[420px]">
+          <h1 className="display text-[clamp(38px,4.4vw,56px)]">
+            {title}
+            <span className="accent">.</span>
+          </h1>
+          {subtitle && <p className="mt-3 text-[15px] leading-relaxed text-muted">{subtitle}</p>}
+
+          <div className="mt-8">{children}</div>
+
+          {footer && <div className="mt-8 text-center text-sm text-muted">{footer}</div>}
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          {children}
-          {footer && <div className="mt-8 border-t border-white/5 pt-6 text-center text-xs text-slate-400">{footer}</div>}
-        </div>
+        <aside className="mx-auto hidden w-full max-w-[560px] lg:block">{aside ?? <TripArt />}</aside>
       </div>
     </div>
   );
@@ -51,17 +52,13 @@ export function FormMessage({ error, notice }: { error?: string | null; notice?:
   return (
     <div
       role={isError ? "alert" : "status"}
-      className={`animate-in flex items-start gap-3 rounded-xl border p-3 text-xs ${
+      className={`animate-in flex items-start gap-3 rounded-xl border p-3.5 text-sm ${
         isError
-          ? "border-rose-500/20 bg-rose-500/10 text-rose-200"
-          : "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+          ? "border-rose-500/25 bg-rose-500/10 text-rose-300"
+          : "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
       }`}
     >
-      {isError ? (
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-      ) : (
-        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-      )}
+      {isError ? <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> : <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />}
       <p className="leading-relaxed">{error || notice}</p>
     </div>
   );
@@ -80,16 +77,9 @@ export function SubmitButton({
   disabled?: boolean;
   variant?: "primary" | "danger";
 }) {
-  const color =
-    variant === "danger"
-      ? "bg-rose-600 hover:bg-rose-500 shadow-rose-500/25"
-      : "bg-primary-600 hover:bg-primary-500 shadow-primary-500/25";
+  const color = variant === "danger" ? "bg-rose-600 text-on-brand hover:bg-rose-500" : "btn-primary";
   return (
-    <button
-      type="submit"
-      disabled={loading || disabled}
-      className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-60 ${color}`}
-    >
+    <button type="submit" disabled={loading || disabled} className={`btn w-full py-3.5 ${color}`}>
       {loading ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />

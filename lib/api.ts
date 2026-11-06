@@ -18,6 +18,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const SESSION_EXPIRED_EVENT = "tb:session-expired";
+
+// An expired token, a deleted account or a block ends the session everywhere.
+api.interceptors.response.use(
+  (res) => res,
+  (error: AxiosError<any>) => {
+    const status = error.response?.status;
+    const url = error.config?.url ?? "";
+    const isAuthCall = url.startsWith("/auth/");
+    const blocked = status === 403 && /blocked/i.test(String(error.response?.data?.message ?? ""));
+    if (typeof window !== "undefined" && !isAuthCall && (status === 401 || blocked)) {
+      window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+    }
+    return Promise.reject(error);
+  }
+);
+
 /** Turns any thrown API error into a message that can be shown to the user. */
 export function getErrorMessage(err: unknown, fallback = "Something went wrong. Please try again.") {
   const e = err as AxiosError<any>;

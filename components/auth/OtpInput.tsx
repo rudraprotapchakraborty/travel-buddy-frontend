@@ -74,7 +74,7 @@ export function OtpInput({
           disabled={disabled}
           maxLength={6}
           aria-label={`Digit ${i + 1}`}
-          className="h-14 w-11 rounded-xl border border-slate-700/50 bg-slate-950/50 text-center text-xl font-semibold tabular-nums text-slate-100 transition-all focus:border-primary-500/60 focus:outline-none focus:ring-2 focus:ring-primary-500/50 disabled:opacity-60 sm:w-12"
+          className="h-14 w-11 rounded-xl border border-line bg-surface text-center text-xl font-semibold tabular-nums text-ink transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 disabled:opacity-60 sm:w-12"
         />
       ))}
     </div>

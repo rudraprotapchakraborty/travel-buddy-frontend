@@ -10,7 +10,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
+import api, { SESSION_EXPIRED_EVENT } from "@/lib/api";
 
 export interface User {
   id: string;
@@ -20,6 +20,7 @@ export interface User {
   profileImageUrl?: string;
   isVerified?: boolean;
   emailVerified?: boolean;
+  isDemo?: boolean;
 }
 
 interface AuthContextValue {
@@ -82,6 +83,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push("/login");
   }, [router]);
 
+  // The API client raises this when the token is rejected
+  useEffect(() => {
+    const onExpired = () => {
+      if (!read("tb_token")) return;
+      logout();
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  }, [logout]);
+
   // Keep the profile fresh; an invalid or expired token signs the user out
   useEffect(() => {
     if (!token) return;
@@ -99,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           profileImageUrl: u.profileImageUrl,
           isVerified: u.isVerified,
           emailVerified: u.emailVerified,
+          isDemo: u.isDemo,
         };
         setUser(next);
         write("tb_user", JSON.stringify(next));

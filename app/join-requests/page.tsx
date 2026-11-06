@@ -82,7 +82,7 @@ const SentRequestCard = ({ request }: { request: JoinRequest }) => {
       <div>
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${deleted ? "bg-slate-800 text-slate-500" : "bg-gradient-to-br from-primary-600 to-indigo-600 text-white shadow-lg shadow-primary-500/20"}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${deleted ? "bg-slate-800 text-slate-500" : "bg-gradient-to-br from-primary-600 to-indigo-600 text-on-brand shadow-lg shadow-primary-500/20"}`}>
               <Plane className="w-5 h-5" />
             </div>
             <div>
@@ -209,7 +209,7 @@ export default function JoinRequestsPage() {
         <div className="absolute inset-0 pointer-events-none">
            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-900/10 blur-[120px] rounded-full" />
            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-primary-900/10 blur-[120px] rounded-full" />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+           <div className="absolute inset-0 opacity-20 mix-blend-overlay"></div>
         </div>
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-10 space-y-8">
@@ -231,14 +231,14 @@ export default function JoinRequestsPage() {
              <div className="p-1 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-xl inline-flex">
                 <button
                    onClick={() => setActiveTab("SENT")}
-                   className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "SENT" ? "bg-primary-600 text-white shadow-lg shadow-primary-500/20" : "text-slate-400 hover:text-white"}`}
+                   className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "SENT" ? "bg-primary-600 text-on-brand shadow-lg shadow-primary-500/20" : "text-slate-400 hover:text-white"}`}
                 >
                    <Send className="w-3.5 h-3.5" />
                    Sent <span className="opacity-60 ml-1">({sent.length})</span>
                 </button>
                 <button
                    onClick={() => setActiveTab("HOST")}
-                   className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "HOST" ? "bg-primary-600 text-white shadow-lg shadow-primary-500/20" : "text-slate-400 hover:text-white"}`}
+                   className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "HOST" ? "bg-primary-600 text-on-brand shadow-lg shadow-primary-500/20" : "text-slate-400 hover:text-white"}`}
                 >
                    <Inbox className="w-3.5 h-3.5" />
                    Received <span className="opacity-60 ml-1">({hostRequests.length})</span>

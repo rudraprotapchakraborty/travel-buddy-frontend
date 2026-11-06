@@ -4,80 +4,11 @@ import { motion } from "framer-motion";
 import { Calendar, User, ArrowRight, Search, Tag, Clock } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-
-// --- Mock Data ---
-const BLOG_POSTS = [
-  {
-    id: 1,
-    title: "10 Essential Tips for First-Time Solo Travelers",
-    excerpt: "Solo travel is one of the most rewarding experiences, but it can be daunting. Here's what you need to know before you go...",
-    author: "Sarah Jenkins",
-    date: "Dec 15, 2024",
-    category: "Solo Travel",
-    readTime: "5 min read",
-    image: "🏔️", // Replace with real images in production
-    color: "from-blue-500/20 to-cyan-500/20"
-  },
-  {
-    id: 2,
-    title: "How to Find the Perfect Travel Buddy Online",
-    excerpt: "Safety, interests, and budget—finding a compatible companion is an art. Our guide helps you navigate the process...",
-    author: "Arif Rahman",
-    date: "Dec 12, 2024",
-    category: "Community",
-    readTime: "7 min read",
-    image: "🤝",
-    color: "from-purple-500/20 to-pink-500/20"
-  },
-  {
-    id: 3,
-    title: "Hidden Gems: Budget-Friendly Destinations in 2025",
-    excerpt: "Explore stunning locations that won't break the bank. From Southeast Asia to Eastern Europe, discover where to go next...",
-    author: "Elena Rossi",
-    date: "Dec 10, 2024",
-    category: "Budget",
-    readTime: "6 min read",
-    image: "🏝️",
-    color: "from-emerald-500/20 to-teal-500/20"
-  },
-  {
-    id: 4,
-    title: "The Ultimate Packing List for Adventure Seekers",
-    excerpt: "Don't forget the essentials. We've compiled a list of everything from gear to medical kits for your next mountain trek...",
-    author: "David Chen",
-    date: "Dec 08, 2024",
-    category: "Adventure",
-    readTime: "8 min read",
-    image: "🎒",
-    color: "from-orange-500/20 to-red-500/20"
-  },
-  {
-    id: 5,
-    title: "Staying Safe: Identity Verification in Travel Apps",
-    excerpt: "Learn how we use advanced security protocols to ensure every traveler you meet is verified and trustworthy...",
-    author: "Admin Team",
-    date: "Dec 05, 2024",
-    category: "Safety",
-    readTime: "4 min read",
-    image: "🛡️",
-    color: "from-indigo-500/20 to-blue-500/20"
-  },
-  {
-    id: 6,
-    title: "Sustainable Travel: Leaving Only Footprints",
-    excerpt: "How to be a responsible traveler. Discover eco-friendly stays and ways to support local communities on your journey...",
-    author: "Sarah Jenkins",
-    date: "Dec 01, 2024",
-    category: "Eco-Travel",
-    readTime: "10 min read",
-    image: "🌿",
-    color: "from-green-500/20 to-emerald-500/20"
-  }
-];
+import { BLOG_POSTS, type BlogPost } from "@/lib/blog";
 
 // --- Components ---
 
-const BlogCard = ({ post }: { post: typeof BLOG_POSTS[0] }) => (
+const BlogCard = ({ post }: { post: BlogPost }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -122,7 +53,7 @@ const BlogCard = ({ post }: { post: typeof BLOG_POSTS[0] }) => (
 
       <Link 
         href={`/blog/${post.id}`} 
-        className="mt-6 inline-flex items-center justify-center w-full py-3 rounded-xl bg-white/5 text-white text-sm font-bold group-hover:bg-primary-600 transition-all"
+        className="mt-6 inline-flex items-center justify-center w-full py-3 rounded-xl bg-white/5 text-on-brand text-sm font-bold group-hover:bg-primary-600 transition-all"
       >
         Read Full Story <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
       </Link>
@@ -192,7 +123,7 @@ export default function BlogPage() {
         {/* 3. Pagination (Mandatory Feature) */}
         <div className="mt-16 flex justify-center items-center gap-2">
           <button className="px-4 py-2 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:bg-white/10 transition disabled:opacity-50" disabled>Previous</button>
-          <button className="w-10 h-10 rounded-lg bg-primary-600 text-white font-bold">1</button>
+          <button className="w-10 h-10 rounded-lg bg-primary-600 text-on-brand font-bold">1</button>
           <button className="w-10 h-10 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:bg-white/10 transition">2</button>
           <button className="px-4 py-2 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:bg-white/10 transition">Next</button>
         </div>
@@ -211,7 +142,7 @@ export default function BlogPage() {
                   placeholder="your@email.com" 
                   className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-500"
                 />
-                <button className="px-8 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-500 transition shadow-lg shadow-primary-600/20">
+                <button className="px-8 py-3 bg-primary-600 text-on-brand rounded-xl font-bold hover:bg-primary-500 transition shadow-lg shadow-primary-600/20">
                   Subscribe
                 </button>
               </form>
