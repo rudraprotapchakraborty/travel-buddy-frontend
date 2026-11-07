@@ -1,184 +1,80 @@
-# Travel Buddy & Meetup — Frontend
+<div align="center">
 
-Live URL: [https://travel-buddy-frontend-lake.vercel.app/](https://travel-buddy-frontend-lake.vercel.app/)
+# 🧳 Travel Buddy
 
----
+**Find travel companions, share trip plans and organise meetups.**
 
-## 🎒 Project Overview
+[**Live demo**](https://travel-buddy-frontend-qzgv.vercel.app/) · [Backend API](https://github.com/rudraprotapchakraborty/travel-buddy-backend) · [Portfolio](https://rudraprotapchakraborty.com/projects)
 
-**Travel Buddy & Meetup** is a social-travel web application frontend that helps users discover travel companions, create and share travel plans, and organize meetups. The frontend is built to be modern, responsive, and ready to connect to a backend API that implements authentication, travel plans, reviews, and payment features.
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=ffffff) ![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61dafb) ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=for-the-badge&logo=typescript&logoColor=ffffff) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-0f172a?style=for-the-badge&logo=tailwindcss&logoColor=38bdf8) ![Stripe](https://img.shields.io/badge/Stripe-635bff?style=for-the-badge&logo=stripe&logoColor=ffffff)
 
-This repository contains the **frontend** portion of the platform (React / Next.js app). It focuses on user experience, routing, profile/trip CRUD flows, and connecting to backend APIs for persistence.
+<a href="https://travel-buddy-frontend-qzgv.vercel.app/"><img src="https://i.ibb.co/xqdgD8GH/travel-buddy.webp" alt="Travel Buddy: home page" width="880"></a>
 
----
+</div>
 
-## ✨ Key Features
+> The web app of **Travel Buddy**.
+>
+> - Post trip plans and search other trips by destination, dates and travel style
+> - Join requests that hosts accept or decline, with ratings and reviews after the trip
+> - Email-verified accounts, Google sign-in and a Stripe-paid verified plan
+> - Admin dashboard for members and trips
 
-* Register / Login (JWT-based authentication flow expected from backend).
-* Role-aware navigation (User / Admin flows).
-* User profile management (create / edit / view public profiles).
-* Travel plans (create, read, update, delete).
-* Search & match travelers by destination, date range and interests.
-* Reviews & ratings for post-trip trust building.
-* Subscription / payment integration placeholders (Stripe, SSLCommerz, etc.).
-* Responsive UI with modern, accessible components.
+A full-stack platform for travellers heading the same way. Members post trip plans, search other trips by destination, dates and travel style, send join requests that hosts accept or decline, and leave ratings and reviews after the trip. Accounts are email-verified with one-time codes, with Google sign-in, password reset, a full account settings page (photo, name, email, password, delete account), a verified plan paid through Stripe, an admin dashboard for members and trips, and a light and dark theme. Includes test accounts on the login page so recruiters can explore every role.
 
----
+## Features
 
-## 🧭 Tech Stack
+- **Explore trips** – browse public trip plans, search by destination, dates and travel style, and open a plan to see the host, itinerary and budget
+- **Plan a trip** – add, edit and delete your own plans; a match view suggests travellers going the same way
+- **Join requests** – ask to join a trip with a message; hosts accept or decline from their dashboard
+- **Reviews** – rate and review fellow travellers after a trip
+- **Accounts** – email + one-time code verification, Google sign-in, password reset, and a settings page for photo, name, email, password and account deletion
+- **Verified plan** – a one-time Stripe payment that adds a verified badge
+- **Admin dashboard** – members and trips at a glance
+- **Polish** – light and dark theme, responsive layout, skeleton loaders, toasts, legal pages and a blog
 
-* **Framework:** Next.js (App Router)
-* **Language:** TypeScript (recommended) or JavaScript
-* **Styling:** Tailwind CSS (suggested) / CSS Modules
-* **Auth:** JWT flow (frontend stores token securely)
-* **Image Upload:** Cloudinary / ImgBB (integration points in UI)
-* **Payments:** Stripe or other gateway (integration points in UI)
-* **Deployment:** Vercel (live link above)
+## Test accounts
 
----
+The login page offers one-tap test accounts for each role:
 
-## 📁 Folder Structure (Suggested)
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@travelbuddy.demo` | `TravelDemo#2026` |
+| User | `user@travelbuddy.demo` | `TravelDemo#2026` |
 
-```
-frontend/
- ├── app/                # Next.js app router pages & layouts
- │   ├── (auth)/         # login, register UI
- │   ├── (user)/         # profile, travel-plans, dashboard
- │   ├── components/     # shared UI components (Navbar, Forms, Cards)
- │   ├── hooks/          # custom hooks (useAuth, useFetch)
- │   ├── lib/            # api client, utils
- │   └── styles/         # global + component styles
- ├── public/             # static assets
- ├── package.json
- └── README.md
-```
+## Tech stack
 
----
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Framer Motion · Axios · Stripe.js · Lucide icons
 
-## 🔌 API Endpoints (Frontend expects these)
+## Run it locally
 
-> Replace `NEXT_PUBLIC_API_BASE_URL` in .env with your backend base URL.
-
-| Method | Endpoint                      | Purpose                  |
-| ------ | ----------------------------- | ------------------------ |
-| POST   | `/api/auth/register`          | Register new user        |
-| POST   | `/api/auth/login`             | Login user (returns JWT) |
-| GET    | `/api/users/:id`              | Get user profile         |
-| PATCH  | `/api/users/:id`              | Update profile           |
-| POST   | `/api/travel-plans`           | Create travel plan       |
-| GET    | `/api/travel-plans`           | Get all travel plans     |
-| GET    | `/api/travel-plans/match`     | Search & match travelers |
-| POST   | `/api/reviews`                | Add review               |
-| POST   | `/api/payments/create-intent` | Create payment intent    |
-
----
-
-## ⚙️ Environment Variables
-
-Create a `.env.local` file at the project root with the following variables (example names):
-
-```env
-NEXT_PUBLIC_API_BASE_URL=https://your-backend.example.com
-NEXT_PUBLIC_CLOUDINARY_URL=...    # optional: image upload
-NEXT_PUBLIC_STRIPE_KEY=...        # optional: payments
-NEXTAUTH_SECRET=...               # if using next-auth or other secret
-```
-
-> Adjust names to match how the frontend code reads them.
-
----
-
-## 🚀 Local Setup & Development
-
-1. Clone the repo:
-
-```bash
-git clone <repo-url>
-cd frontend
-```
-
-2. Install dependencies:
+Start the [backend](https://github.com/rudraprotapchakraborty/travel-buddy-backend) on port 5000, then:
 
 ```bash
 npm install
-# or
-pnpm install
-# or
-yarn
+npm run dev        # http://localhost:3000
 ```
 
-3. Add `.env.local` with environment variables (see above).
+### Environment (`.env`, git-ignored)
 
-4. Run development server:
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | Backend API address, for example `http://localhost:5000/api` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google sign-in (public client id) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (test mode while developing) |
+| `NEXT_PUBLIC_SITE_URL` | Public address of this site |
 
-```bash
-npm run dev
-# or
-pnpm dev
-# or
-yarn dev
-```
+## Scripts
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+`npm run dev` · `npm run build` · `npm start` · `npm run lint` · `npm run typecheck`
 
----
+## Deploying
 
-## 📦 Available Scripts
-
-* `dev` — Starts the Next.js dev server.
-* `build` — Builds the production app.
-* `start` — Runs the production build locally.
-* `lint` — Run linters (if configured).
-* `test` — Run tests (if configured).
-
-> Check `package.json` for exact script names and adjust accordingly.
+Deploy to Vercel with the variables above. Set the backend's `CLIENT_URL` to the site's address.
 
 ---
 
-## 🧩 UI / Component Notes
+<div align="center">
 
-* **Navbar** is role-aware and shows different links for logged-out users, regular users, and admins.
-* **Auth Context / Hook** should handle token storage (use HttpOnly cookies from backend when possible for better security).
-* **Forms**: use controlled components and client-side validation before sending requests.
-* **Images**: upload flow calls your image host (Cloudinary/ImgBB) and stores returned URL in user/profile or travel plan payloads.
+Made by **[Rudra Protap Chakraborty](https://rudraprotapchakraborty.com)** · [Portfolio](https://rudraprotapchakraborty.com) · [GitHub](https://github.com/rudraprotapchakraborty)
 
----
-
-## 🔒 Security Recommendations
-
-* Prefer server-side HttpOnly cookies for JWT/session tokens to reduce XSS risk.
-* Validate and sanitize user-submitted content before rendering (especially reviews and rich text).
-* Use TLS in production (Vercel already provides HTTPS).
-
----
-
-## ♻️ Deployment
-
-This project is already deployed to Vercel at:
-
-**[https://travel-buddy-frontend-lake.vercel.app/](https://travel-buddy-frontend-lake.vercel.app/)**
-
-To redeploy or connect a Git repo to Vercel:
-
-1. Push your branch to GitHub/GitLab.
-2. Link the repo in Vercel dashboard.
-3. Setup environment variables in Vercel settings.
-4. Deploy.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Suggested workflow:
-
-1. Fork the repo
-2. Create a feature branch (`feature/awesome-thing`)
-3. Open a PR with a clear description
-
-Please include tests for important behavior when possible.
-
----
-
-## 👤 Author
-
-Rudra Protap Chakraborty
+</div>
