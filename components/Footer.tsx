@@ -1,3 +1,4 @@
+import { ArrowUpRight, Heart } from "lucide-react";
 import Link from "next/link";
 import Brand from "./Brand";
 
@@ -60,9 +61,24 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-line">
-        <div className="frame flex flex-col items-start justify-between gap-2 py-6 text-xs text-muted sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} Travel Buddy. All rights reserved.</p>
-          <p>Meet in public places and share your plans with someone you trust.</p>
+        <div className="frame flex flex-col items-start justify-between gap-4 py-6 text-xs text-muted sm:flex-row sm:items-center">
+          <div className="space-y-1">
+            <p>© {new Date().getFullYear()} Travel Buddy. All rights reserved.</p>
+            <p>Meet in public places and share your plans with someone you trust.</p>
+          </div>
+          <a
+            href="https://rudraprotapchakraborty.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Made by Rudra Protap Chakraborty (opens his portfolio)"
+            className="group inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-3 pr-3.5 text-xs font-medium text-muted shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:text-ink"
+          >
+            <Heart aria-hidden className="h-3.5 w-3.5 fill-brand text-brand transition-transform duration-200 group-hover:scale-125" />
+            <span>
+              Made by <span className="font-semibold text-ink">Rudra Protap Chakraborty</span>
+            </span>
+            <ArrowUpRight aria-hidden className="h-3.5 w-3.5 opacity-60 transition-opacity group-hover:opacity-100" />
+          </a>
         </div>
       </div>
     </footer>
